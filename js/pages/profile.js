@@ -79,13 +79,17 @@ async function loadUserPosts(profileId) {
 
     el.innerHTML = res.documents
       .map(post => renderTemplate('post-card', {
-        id:         post.$id,
-        title:      post.title,
-        authorId:   post.authorId,
-        authorName: post.authorName,
-        content:    post.content,
-        tags:       post.tags || [],
-        createdAt:  post.$createdAt,
+        id:          post.$id,
+        title:       post.title,
+        authorId:    post.authorId,
+        authorName:  post.authorName,
+        content:     post.content,
+        tags:        post.tags || [],
+        createdAt:   post.$createdAt,
+        postType:    post.postType || 'text',
+        imageUrl:    post.imageId ? getImageUrl(post.imageId) : '',
+        linkUrl:     post.linkUrl || '',
+        quoteSource: post.quoteSource || '',
       }))
       .join('');
   } catch (err) {

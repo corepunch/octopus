@@ -146,6 +146,22 @@ attr posts string "$(jq -n \
 attr posts boolean "$(jq -n \
   '{key:"published", required:false, default:true}')"
 
+# postType: string(16) — "text" | "photo" | "quote" | "link"
+attr posts string "$(jq -n \
+  '{key:"postType", size:16, required:false, default:"text"}')"
+
+# imageId: string(36) — Appwrite Storage file ID (photo posts)
+attr posts string "$(jq -n \
+  '{key:"imageId", size:36, required:false}')"
+
+# linkUrl: string(2048) — URL for link posts
+attr posts string "$(jq -n \
+  '{key:"linkUrl", size:2048, required:false}')"
+
+# quoteSource: string(256) — attribution for quote posts
+attr posts string "$(jq -n \
+  '{key:"quoteSource", size:256, required:false}')"
+
 info "  → indexes…"
 # Wait for all attributes to be available before creating indexes
 wait_for_attrs posts
@@ -276,7 +292,34 @@ aw POST "/databases/$DB_ID/collections/profiles/indexes" "$(jq -n \
 
 info "Collection 'profiles' done."
 
-# ── 5. Register Web Platform (CORS) ───────────────────────────────────────────
+# ── 5. Storage bucket: post-images ────────────────────────────────────────────
+info "Creating storage bucket 'post-images'…"
+bucket_raw=$(curl -s -w "\n%{http_code}" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/storage/buckets" \
+  -d "$(jq -n '{
+    bucketId:    "post-images",
+    name:        "Post Images",
+    permissions: ["read(\"any\")", "create(\"users\")"],
+    fileSecurity: false,
+    enabled:     true,
+    maximumFileSize: 10485760,
+    allowedFileExtensions: ["jpg","jpeg","png","gif","webp","avif"]
+  }')")
+bucket_code=$(tail -n1 <<<"$bucket_raw")
+if [[ "$bucket_code" -eq 201 || "$bucket_code" -eq 200 ]]; then
+  info "  → Storage bucket 'post-images' created."
+elif [[ "$bucket_code" -eq 409 ]]; then
+  info "  → Storage bucket 'post-images' already exists – skipping."
+else
+  warn "  → Could not create storage bucket (HTTP $bucket_code)."
+  sed '$d' <<<"$bucket_raw" | jq -r '.message // empty' >&2
+fi
+
+# ── 6. Register Web Platform (CORS) ───────────────────────────────────────────
 # Appwrite blocks browser requests from origins that are not registered as Web
 # platforms on the project (HTTP 403 / CORS errors). Registering the platform
 # here means users who run this script never have to do it manually.
@@ -311,5 +354,6 @@ echo ""
 info "✅  Appwrite schema provisioned successfully."
 info "    Database :  $DB_ID"
 info "    Collections: posts, follows, profiles"
+info "    Storage bucket: post-images"
 info "    Web platform: $PAGES_HOSTNAME"
 echo ""

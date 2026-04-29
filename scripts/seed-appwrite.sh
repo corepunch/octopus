@@ -231,6 +231,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     data: {
       title:      "Writing as thinking",
       content:    "## Why I write to understand\n\nI used to think you needed to understand something before you could write about it. I had it backwards.\n\n> Writing is not the record of thinking — it is the thinking itself.\n\n### The mechanism\n\nWhen I try to explain a concept in writing, gaps appear immediately. A vague mental model that felt solid collapses the moment it has to become sentences.\n\n### The practice\n\nI keep a daily note. Not for others — for me. Stream of consciousness, no editing, no structure.\n\nThen I revisit after a week. Some of it is noise. But some of it is the seed of something real.\n\n**Try it for 30 days.** You will think more clearly, I promise.",
+      postType:   "text",
       authorId:   $uid,
       authorName: "carol",
       tags:       ["writing","thinking","productivity"],
@@ -238,6 +239,115 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     },
     permissions: ["read(\"any\")"]
   }')" >/dev/null && info "  post: Writing as thinking"
+
+# ── New posts: mixed types ─────────────────────────────────────────────────────
+info "Creating additional posts…"
+
+# alice – quote post
+aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+  --arg uid  "$U1" \
+  '{
+    documentId: "unique()",
+    data: {
+      title:       "On simplicity",
+      content:     "Simplicity is the ultimate sophistication.",
+      postType:    "quote",
+      quoteSource: "Leonardo da Vinci",
+      authorId:    $uid,
+      authorName:  "alice",
+      tags:        ["design","quotes","simplicity"],
+      published:   true
+    },
+    permissions: ["read(\"any\")"]
+  }')" >/dev/null && info "  post: quote – On simplicity"
+
+# bob – link post
+aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+  --arg uid  "$U2" \
+  '{
+    documentId: "unique()",
+    data: {
+      title:   "Appwrite Docs",
+      content: "The official Appwrite documentation is surprisingly readable. Highly recommended for anyone building a BaaS-powered static site.",
+      postType: "link",
+      linkUrl:  "https://appwrite.io/docs",
+      authorId:  $uid,
+      authorName: "bob",
+      tags:      ["appwrite","docs","reference"],
+      published: true
+    },
+    permissions: ["read(\"any\")"]
+  }')" >/dev/null && info "  post: link – Appwrite Docs"
+
+# carol – quote post
+aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+  --arg uid  "$U3" \
+  '{
+    documentId: "unique()",
+    data: {
+      title:       "Good design is invisible",
+      content:     "Good design, when done well, should be invisible. It is only when it is done poorly that we notice it.",
+      postType:    "quote",
+      quoteSource: "Jony Ive",
+      authorId:    $uid,
+      authorName:  "carol",
+      tags:        ["design","ux","quotes"],
+      published:   true
+    },
+    permissions: ["read(\"any\")"]
+  }')" >/dev/null && info "  post: quote – Good design"
+
+# alice – link post
+aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+  --arg uid  "$U1" \
+  '{
+    documentId: "unique()",
+    data: {
+      title:   "The Markdown Guide",
+      content: "A free and open-source reference guide that explains how to use Markdown. Essential reading for any technical writer.",
+      postType: "link",
+      linkUrl:  "https://www.markdownguide.org",
+      authorId:  $uid,
+      authorName: "alice",
+      tags:      ["markdown","writing","reference"],
+      published: true
+    },
+    permissions: ["read(\"any\")"]
+  }')" >/dev/null && info "  post: link – Markdown Guide"
+
+# bob – text post about open source
+aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+  --arg uid  "$U2" \
+  '{
+    documentId: "unique()",
+    data: {
+      title:      "Why I contribute to open source",
+      postType:   "text",
+      content:    "## The honest truth\n\nPeople assume open-source contributors are altruistic saints. Some are. Most of us are just solving our own problems and sharing the fix.\n\n### The loop\n\n1. Hit a bug or missing feature.\n2. Dig into the code.\n3. Fix it.\n4. Send the patch upstream.\n\nThe patch benefits the maintainer. The process benefits me far more — reading unfamiliar codebases is the fastest way to grow as an engineer.\n\n### Start small\n\nFix a typo in the docs. Triage one issue. You do not need to write a whole feature on day one.",
+      authorId:   $uid,
+      authorName: "bob",
+      tags:       ["opensource","programming","community"],
+      published:  true
+    },
+    permissions: ["read(\"any\")"]
+  }')" >/dev/null && info "  post: text – Why I contribute to open source"
+
+# carol – text post on colour theory
+aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+  --arg uid  "$U3" \
+  '{
+    documentId: "unique()",
+    data: {
+      title:      "A short guide to colour contrast",
+      postType:   "text",
+      content:    "## Why contrast matters\n\nPoor colour contrast is one of the most common accessibility failures on the web. WCAG 2.1 requires a **4.5:1** ratio for normal text and **3:1** for large text.\n\n### Quick checks\n\n- Use the [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)\n- Try your UI in greyscale — if it falls apart, contrast is probably the culprit\n- Avoid grey-on-white for body copy\n\n### The bonus\n\nHigh-contrast designs do not just help users with visual impairments. They are easier to read in bright sunlight, on cheap screens, and when you are tired.",
+      authorId:   $uid,
+      authorName: "carol",
+      tags:       ["accessibility","design","css","colour"],
+      published:  true
+    },
+    permissions: ["read(\"any\")"]
+  }')" >/dev/null && info "  post: text – Colour contrast guide"
 
 # ── 3. Follows ────────────────────────────────────────────────────────────────
 info "Creating follow relationships…"
@@ -276,7 +386,7 @@ aw POST "/databases/$DB_ID/collections/follows/documents" "$(jq -n \
 echo ""
 info "✅  Seed complete."
 info "    Profiles : alice, bob, carol"
-info "    Posts    : 6"
+info "    Posts    : 12 (6 text, 2 quote, 2 link + 2 new text)"
 info "    Follows  : 3"
 echo ""
 warn "Note: seed profiles have fake user IDs and are read-only on the frontend."

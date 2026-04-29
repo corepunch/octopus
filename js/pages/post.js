@@ -20,13 +20,17 @@ async function initPost() {
     document.title = `${post.title} – Octopus`;
 
     container.innerHTML = renderTemplate('post-header', {
-      id:         post.$id,
-      title:      post.title,
-      authorId:   post.authorId,
-      authorName: post.authorName,
-      createdAt:  post.$createdAt,
-      content:    post.content,
-      tags:       post.tags || [],
+      id:          post.$id,
+      title:       post.title,
+      authorId:    post.authorId,
+      authorName:  post.authorName,
+      createdAt:   post.$createdAt,
+      content:     post.content,
+      tags:        post.tags || [],
+      postType:    post.postType || 'text',
+      imageUrl:    post.imageId ? getImageUrl(post.imageId) : '',
+      linkUrl:     post.linkUrl || '',
+      quoteSource: post.quoteSource || '',
     });
 
     renderPostSidebar(post);

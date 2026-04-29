@@ -1,11 +1,50 @@
-<h1 class="post-page-title">{{title}}</h1>
-<div class="post-page-meta">
-  By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
-  · {{timeAgo createdAt}}
-  {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
-</div>
-<div class="post-actions" style="margin-bottom:20px;">
-  <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
-  <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
-</div>
-<div class="markdown-body">{{markdown content}}</div>
+{{#if (eq postType "photo")}}
+  {{#if imageUrl}}<img class="post-page-image" src="{{imageUrl}}" alt="{{title}}"/>{{/if}}
+  <div class="post-page-meta" style="margin-top:16px;">
+    By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
+    · {{timeAgo createdAt}}
+    {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
+  </div>
+  <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+    <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
+  </div>
+  {{#if content}}<div class="markdown-body">{{markdown content}}</div>{{/if}}
+{{else if (eq postType "quote")}}
+  <div class="post-page-meta">
+    By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
+    · {{timeAgo createdAt}}
+    {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
+  </div>
+  <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+    <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
+  </div>
+  <blockquote class="post-page-quote">{{content}}</blockquote>
+  {{#if quoteSource}}<cite class="post-page-quote-source">— {{quoteSource}}</cite>{{/if}}
+{{else if (eq postType "link")}}
+  <h1 class="post-page-title">{{title}}</h1>
+  <div class="post-page-meta">
+    By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
+    · {{timeAgo createdAt}}
+    {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
+  </div>
+  <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+    <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
+  </div>
+  {{#if linkUrl}}<a href="{{linkUrl}}" class="post-page-link-card" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{linkUrl}}</a>{{/if}}
+  {{#if content}}<div class="markdown-body" style="margin-top:16px;">{{markdown content}}</div>{{/if}}
+{{else}}
+  <h1 class="post-page-title">{{title}}</h1>
+  <div class="post-page-meta">
+    By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
+    · {{timeAgo createdAt}}
+    {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
+  </div>
+  <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+    <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
+  </div>
+  <div class="markdown-body">{{markdown content}}</div>
+{{/if}}

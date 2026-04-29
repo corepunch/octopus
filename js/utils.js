@@ -147,13 +147,52 @@ function iconLabel(name, label) {
   return svg + ' ' + escapeHtml(label);
 }
 
+/** {{eq a b}} → true if a === b (used for post-type conditionals) */
+Handlebars.registerHelper('eq', (a, b) => a === b);
+
 /**
- * Return just the icon SVG for icon-only controls.
- * @param {string} name – icon key from ICONS
- * @returns {string} safe HTML string – icon is always from ICONS
+ * Return the public view URL for an Appwrite Storage file.
+ * @param {string} fileId – Appwrite Storage file $id
+ * @returns {string} absolute URL to view the file
  */
-function iconOnly(name) {
-  return (typeof ICONS !== 'undefined' && ICONS[name]) || '';
+function getImageUrl(fileId) {
+  if (!fileId) return '';
+  return `${APPWRITE_ENDPOINT}/storage/buckets/${APPWRITE_BUCKET_ID}/files/${fileId}/view?project=${APPWRITE_PROJECT_ID}`;
+}
+
+/**
+ * Compress an image File to JPEG at ~30% quality.
+ * Downscales so neither dimension exceeds 1200 px.
+ * @param {File} file
+ * @returns {Promise<File>} compressed JPEG File
+ */
+function compressImage(file) {
+  return new Promise(function (resolve, reject) {
+    var reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = function (e) {
+      var img = new Image();
+      img.onerror = reject;
+      img.onload = function () {
+        var MAX = 1200;
+        var w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else       { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width  = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(function (blob) {
+          if (blob) resolve(new File([blob], 'image.jpg', { type: 'image/jpeg' }));
+          else      reject(new Error('Image compression failed'));
+        }, 'image/jpeg', 0.30);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 /**

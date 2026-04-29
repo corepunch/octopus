@@ -14,3 +14,6 @@ const APPWRITE_DB_ID = 'octopus-db';
 const COL_POSTS   = 'posts';
 const COL_FOLLOWS = 'follows';
 const COL_USERS   = 'profiles';
+
+// Storage bucket for post images (created by the provision script)
+const APPWRITE_BUCKET_ID = 'post-images';

@@ -5,7 +5,7 @@
  * The Appwrite SDK IIFE build exposes everything on window.Appwrite.
  */
 
-const { Client, Account, Databases, Query, ID } = Appwrite;
+const { Client, Account, Databases, Storage, Query, ID } = Appwrite;
 
 const client = new Client()
   .setEndpoint(APPWRITE_ENDPOINT)
@@ -13,6 +13,7 @@ const client = new Client()
 
 const account   = new Account(client);
 const databases = new Databases(client);
+const storage   = new Storage(client);
 
 // Verify the connection to the Appwrite backend on every page load.
 // A TypeError here almost always means the current origin is not registered
