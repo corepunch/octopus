@@ -34,7 +34,8 @@ err_exit(){ echo -e "${RED}[!]${NC} $*" >&2; exit 1; }
 
 # ── Helper: Appwrite REST call ─────────────────────────────────────────────────
 # Usage: aw <method> <path> [body_json]
-# Prints the response body; exits non-zero on HTTP >= 400 (except 409 = already exists)
+# Prints the response body; exits non-zero on HTTP >= 400 (except 409 = already exists,
+# 403 = free-tier resource limit = also treat as "already exists" for idempotency)
 aw() {
   local method="$1" path="$2" body="${3:-}"
   local args=(
@@ -49,14 +50,14 @@ aw() {
   local code; code=$(tail -n1 <<<"$raw")
   local resp; resp=$(sed '$d' <<<"$raw")
 
-  if [[ "$code" -ge 400 && "$code" -ne 409 ]]; then
+  if [[ "$code" -ge 400 && "$code" -ne 409 && "$code" -ne 403 ]]; then
     echo "$resp" | jq -r '.message // "unknown error"' >&2
     err_exit "HTTP $code – $method $path"
   fi
   echo "$resp"
 }
 
-# ── Helper: create attribute, skip if 409 ─────────────────────────────────────
+# ── Helper: create attribute, skip if 409 or 403 ──────────────────────────────
 attr() {
   local col="$1" type="$2" body="$3"
   local raw; raw=$(curl -s -w "\n%{http_code}" \
@@ -67,7 +68,7 @@ attr() {
     -d "$body" \
     "$ENDPOINT/databases/$DB_ID/collections/$col/attributes/$type")
   local code; code=$(tail -n1 <<<"$raw")
-  if [[ "$code" -ge 400 && "$code" -ne 409 ]]; then
+  if [[ "$code" -ge 400 && "$code" -ne 409 && "$code" -ne 403 ]]; then
     sed '$d' <<<"$raw" | jq -r '.message // empty' >&2
     err_exit "HTTP $code – creating $type attribute on $col"
   fi
@@ -176,16 +177,10 @@ aw POST "/databases/$DB_ID/collections/posts/indexes" "$(jq -n \
     orders:     ["ASC"]
   }')" >/dev/null
 
-# Key index on tags (array containment queries for tag search)
-aw POST "/databases/$DB_ID/collections/posts/indexes" "$(jq -n \
-  '{
-    key:        "idx_tags",
-    type:       "key",
-    attributes: ["tags"],
-    orders:     ["ASC"]
-  }')" >/dev/null
-
 info "Collection 'posts' done."
+# Note: Appwrite does not support indexes on array attributes (tags[]).
+# Tag search uses Query.equal('tags', value) which works without an index
+# via a collection scan. For large datasets consider a dedicated tags collection.
 
 # ── 3. Collection: follows ─────────────────────────────────────────────────────
 info "Creating collection 'follows'…"

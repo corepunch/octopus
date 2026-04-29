@@ -1,0 +1,40 @@
+name: Seed Appwrite Sample Data
+
+on:
+  # Run manually from the Actions tab – choose whether to reset first
+  workflow_dispatch:
+    inputs:
+      reset:
+        description: "Wipe all existing documents before seeding (destructive!)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Seed sample data
+        env:
+          APPWRITE_API_KEY:    ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_ENDPOINT:   "https://fra.cloud.appwrite.io/v1"
+          APPWRITE_PROJECT_ID: "69f1c06800389dc6a1a0"
+        run: |
+          if [[ "${{ github.event.inputs.reset }}" == "true" ]]; then
+            bash scripts/seed-appwrite.sh --reset
+          else
+            bash scripts/seed-appwrite.sh
+          fi
