@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>utils.js tests – Octopus</title>
+</head>
+<body>
+<p>Open the browser console to see test results.</p>
+
+<!-- Same CDN scripts as a normal page (no marked/DOMPurify needed here) -->
+<script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@16/dist/iife/sdk.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/appwrite.js"></script>
+<script src="../js/templates.js"></script>
+<script src="../js/utils.js"></script>
+
+<script>
+// Minimal assertion helper – results appear in the browser console.
+function assert(label, actual, expected) {
+  const ok = JSON.stringify(actual) === JSON.stringify(expected);
+  console[ok ? 'log' : 'error'](
+    `${ok ? '✓' : '✗'} ${label}`,
+    ok ? '' : `\n  expected: ${JSON.stringify(expected)}\n  actual:   ${JSON.stringify(actual)}`
+  );
+}
+
+// ── timeAgo ──────────────────────────────────────────────────────────────────
+const now = new Date();
+assert('timeAgo – seconds', timeAgo(new Date(now - 30 * 1000).toISOString()), '30s ago');
+assert('timeAgo – minutes', timeAgo(new Date(now - 5 * 60 * 1000).toISOString()), '5m ago');
+assert('timeAgo – hours',   timeAgo(new Date(now - 3 * 3600 * 1000).toISOString()), '3h ago');
+assert('timeAgo – days',    timeAgo(new Date(now - 2 * 86400 * 1000).toISOString()), '2d ago');
+
+// ── excerpt ───────────────────────────────────────────────────────────────────
+assert('excerpt – short text unchanged', excerpt('Hello world'), 'Hello world');
+assert('excerpt – strips markdown chars', excerpt('## Title\n**bold**'), 'Title\nbold');
+const longText = 'a'.repeat(200);
+assert('excerpt – truncates at 160', excerpt(longText).length, 164); // 160 chars + '…'
+
+// ── escapeHtml ────────────────────────────────────────────────────────────────
+assert('escapeHtml – ampersand', escapeHtml('a & b'), 'a &amp; b');
+assert('escapeHtml – angle brackets', escapeHtml('<script>'), '&lt;script&gt;');
+assert('escapeHtml – quotes', escapeHtml('"hi"'), '&quot;hi&quot;');
+
+// ── parseTags ─────────────────────────────────────────────────────────────────
+assert('parseTags – basic', parseTags('js, Go, Web Dev'), ['js', 'go', 'web-dev']);
+assert('parseTags – empty string', parseTags(''), []);
+assert('parseTags – max 10 tags', parseTags(Array(15).fill('x').join(',')).length, 10);
+</script>
+</body>
+</html>
