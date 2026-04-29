@@ -45,8 +45,11 @@ async function logout() {
 async function ensureProfile(user) {
   try {
     await databases.getDocument(APPWRITE_DB_ID, COL_USERS, user.$id);
-  } catch {
-    // Profile doesn't exist yet – create it.
+  } catch (err) {
+    // Only create the profile when the document genuinely doesn't exist.
+    // Re-throw network errors, permission errors, etc. so the caller can
+    // surface a meaningful message instead of masking them.
+    if (err.code !== 404) throw err;
     await databases.createDocument(
       APPWRITE_DB_ID,
       COL_USERS,
@@ -86,3 +89,8 @@ async function renderNav() {
 }
 
 // escapeHtml is defined in utils.js and loaded before auth.js on every page.
+
+// CommonJS export – used by the Jest test suite; ignored in the browser.
+if (typeof module !== 'undefined') {
+  module.exports = { getCurrentUser, signIn, signUp, ensureProfile, logout, renderNav };
+}

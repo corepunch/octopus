@@ -88,9 +88,14 @@ async function loadPosts(tab) {
       }))
       .join('');
   } catch (e) {
-    container.innerHTML = '<div class="empty-state"><p>Could not load posts. Check your Appwrite config.</p></div>';
+    container.innerHTML = `<div class="empty-state"><p>Could not load posts: ${escapeHtml(e.message || String(e))}</p></div>`;
     console.error(e);
   }
 }
 
 document.addEventListener('DOMContentLoaded', initFeed);
+
+// CommonJS export – used by the Jest test suite; ignored in the browser.
+if (typeof module !== 'undefined') {
+  module.exports = { loadPosts, initFeed, renderSidebarUser };
+}
