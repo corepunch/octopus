@@ -88,7 +88,15 @@ async function loadPosts(tab) {
       }))
       .join('');
   } catch (e) {
-    container.innerHTML = `<div class="empty-state"><p>Could not load posts: ${escapeHtml(e.message || String(e))}</p></div>`;
+    // TypeError with a generic message (e.g. "Load failed" / "Failed to fetch")
+    // is almost always caused by a CORS 403 from Appwrite: the GitHub Pages
+    // origin has not been registered as a Web Platform on the project.
+    // See: Project → Overview → Platforms → Add Platform → Web.
+    const isNetworkError = e instanceof TypeError;
+    const hint = isNetworkError
+      ? ' Check that this origin is added as a Web Platform in the Appwrite Console.'
+      : '.';
+    container.innerHTML = `<div class="empty-state"><p>Could not load posts: ${escapeHtml(e.message || String(e))}${hint}</p></div>`;
     console.error(e);
   }
 }
