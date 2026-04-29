@@ -1,0 +1,32 @@
+name: Provision Appwrite Schema
+
+on:
+  # Run once manually from the Actions tab after adding APPWRITE_API_KEY to secrets
+  workflow_dispatch:
+  # Also run automatically on the first push that changes the provision script
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/provision-appwrite.sh'
+
+permissions:
+  contents: read
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Provision Appwrite schema
+        env:
+          APPWRITE_API_KEY:    ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_ENDPOINT:   "https://fra.cloud.appwrite.io/v1"
+          APPWRITE_PROJECT_ID: "69f1c06800389dc6a1a0"
+        run: bash scripts/provision-appwrite.sh

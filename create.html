@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Post – Octopus</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<nav id="nav">
+  <a class="nav-logo" href="index.html">🐙 Octopus</a>
+  <div class="nav-links" id="nav-links"></div>
+</nav>
+
+<div class="page-wrap" style="flex-direction:column;">
+  <div class="card">
+    <h1 class="card-title" style="text-align:left;">New Post</h1>
+
+    <div class="alert" id="alert"></div>
+
+    <form id="create-form" novalidate>
+
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input class="form-control" id="title" type="text" placeholder="An interesting title…" required />
+      </div>
+
+      <div class="form-group">
+        <label for="tags">Tags <span style="color:#999;font-weight:normal;">(comma-separated)</span></label>
+        <input class="form-control" id="tags" type="text" placeholder="technology, writing, opinion" />
+      </div>
+
+      <!-- Side-by-side editor + preview -->
+      <div class="form-group">
+        <div class="editor-wrap">
+          <div class="editor-pane">
+            <label for="content">Content <span style="color:#999;font-weight:normal;">(Markdown supported)</span></label>
+            <textarea class="form-control" id="content" placeholder="Write your post in **Markdown**…"></textarea>
+          </div>
+          <div class="preview-pane-wrap">
+            <label>Preview</label>
+            <div class="preview-pane markdown-body" id="preview"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+        <a href="index.html" class="btn btn-secondary">Cancel</a>
+        <button class="btn btn-primary" id="btn-publish" type="submit">Publish</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.5/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@16/dist/iife/sdk.js"></script>
+<script src="js/config.js"></script>
+<script src="js/appwrite.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/pages/create.js"></script>
+
+</body>
+</html>

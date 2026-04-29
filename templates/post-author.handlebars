@@ -1,0 +1,13 @@
+<div class="widget">
+  <h3>Author</h3>
+  <a href="profile.html?id={{urlEncode authorId}}" style="font-weight:bold;">{{authorName}}</a>
+  {{#if showFollow}}
+  <div style="margin-top:10px;">
+    <button id="follow-btn"
+      class="btn {{#if following}}btn-secondary{{else}}btn-primary{{/if}} btn-sm"
+      data-target-id="{{authorId}}">
+      {{#if following}}Unfollow{{else}}Follow{{/if}}
+    </button>
+  </div>
+  {{/if}}
+</div>
