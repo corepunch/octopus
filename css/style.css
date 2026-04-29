@@ -700,7 +700,6 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 }
 
 /* ── Post card body wrapper ──────────────────────────────── */
-.post-card-body { /* no-op – structural wrapper */ }
 
 /* ── Post card: image (photo type) ──────────────────────── */
 .post-card--photo { padding: 0; overflow: hidden; }

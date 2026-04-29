@@ -386,7 +386,7 @@ aw POST "/databases/$DB_ID/collections/follows/documents" "$(jq -n \
 echo ""
 info "✅  Seed complete."
 info "    Profiles : alice, bob, carol"
-info "    Posts    : 12 (6 text, 2 quote, 2 link + 2 new text)"
+info "    Posts    : 12 (8 text, 2 quote, 2 link)"
 info "    Follows  : 3"
 echo ""
 warn "Note: seed profiles have fake user IDs and are read-only on the frontend."

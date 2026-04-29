@@ -48,6 +48,7 @@ async function initCreate() {
   const previewEl = document.getElementById('preview');
 
   function updatePreview() {
+    // renderMarkdown sanitises via DOMPurify (loaded on this page via markdown="true")
     previewEl.innerHTML = renderMarkdown(contentEl.value);
   }
   contentEl.addEventListener('input', updatePreview);
@@ -145,9 +146,7 @@ function switchType(type) {
   // Show/hide title field (always visible but labelled differently)
   const titleLabel = document.querySelector('#field-title label');
   if (titleLabel) {
-    titleLabel.textContent = (type === 'photo' || type === 'quote')
-      ? 'Title (optional)'
-      : type === 'link' ? 'Title' : 'Title';
+    titleLabel.textContent = (type === 'photo' || type === 'quote') ? 'Title (optional)' : 'Title';
   }
 
   // Update sidebar tips
