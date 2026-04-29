@@ -14,7 +14,7 @@
                          omit for type="static" pages with no page JS
           type="…"    – layout type: "feed" (default) or "static"
           markdown="true|false">  – whether to include marked + DOMPurify
-      <body>…page-specific HTML…</body>
+      …page-specific HTML…
     </page>
 
   Layout types:
@@ -47,7 +47,7 @@
           <div class="nav-links" id="nav-links"></div>
         </nav>
 
-        <xsl:copy-of select="body/node()"/>
+        <xsl:copy-of select="node()"/>
 
         <!-- Required CDN scripts in fixed order -->
         <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
