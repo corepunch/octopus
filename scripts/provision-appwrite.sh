@@ -276,12 +276,40 @@ aw POST "/databases/$DB_ID/collections/profiles/indexes" "$(jq -n \
 
 info "Collection 'profiles' done."
 
+# ── 5. Register Web Platform (CORS) ───────────────────────────────────────────
+# Appwrite blocks browser requests from origins that are not registered as Web
+# platforms on the project (HTTP 403 / CORS errors). Registering the platform
+# here means users who run this script never have to do it manually.
+#
+# GITHUB_PAGES_HOSTNAME – override when the deployment domain differs from the
+#                         default. Leave unset to use corepunch.github.io.
+PAGES_HOSTNAME="${GITHUB_PAGES_HOSTNAME:-corepunch.github.io}"
+info "Registering Web platform '$PAGES_HOSTNAME'…"
+
+platform_raw=$(curl -s -w "\n%{http_code}" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/projects/$PROJECT/platforms" \
+  -d "{\"type\":\"web\",\"name\":\"GitHub Pages\",\"hostname\":\"$PAGES_HOSTNAME\"}")
+platform_code=$(tail -n1 <<<"$platform_raw")
+
+if [[ "$platform_code" -eq 201 || "$platform_code" -eq 200 ]]; then
+  info "  → Web platform '$PAGES_HOSTNAME' registered."
+elif [[ "$platform_code" -eq 409 ]]; then
+  info "  → Web platform '$PAGES_HOSTNAME' already exists – skipping."
+else
+  warn "  → Could not register Web platform automatically (HTTP $platform_code)."
+  warn "     Add it manually in the Appwrite Console to fix CORS errors:"
+  warn "     Project → Overview → Platforms → Add Platform → Web"
+  warn "     Hostname: $PAGES_HOSTNAME"
+fi
+
 # ── Done ───────────────────────────────────────────────────────────────────────
 echo ""
 info "✅  Appwrite schema provisioned successfully."
 info "    Database :  $DB_ID"
 info "    Collections: posts, follows, profiles"
+info "    Web platform: $PAGES_HOSTNAME"
 echo ""
-warn "Remember to add a Web platform in the Appwrite Console:"
-warn "  Project → Overview → Platforms → Add Platform → Web"
-warn "  Hostname: your GitHub Pages domain (e.g. youruser.github.io)"

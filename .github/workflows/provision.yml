@@ -26,7 +26,9 @@ jobs:
 
       - name: Provision Appwrite schema
         env:
-          APPWRITE_API_KEY:    ${{ secrets.APPWRITE_API_KEY }}
-          APPWRITE_ENDPOINT:   "https://fra.cloud.appwrite.io/v1"
-          APPWRITE_PROJECT_ID: "69f1c06800389dc6a1a0"
+          APPWRITE_API_KEY:      ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_ENDPOINT:     "https://fra.cloud.appwrite.io/v1"
+          APPWRITE_PROJECT_ID:   "69f1c06800389dc6a1a0"
+          # Override with your own Pages domain if you fork this repository.
+          GITHUB_PAGES_HOSTNAME: "corepunch.github.io"
         run: bash scripts/provision-appwrite.sh
