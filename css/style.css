@@ -96,6 +96,7 @@ a:hover { text-decoration: underline; }
   top: 0;
   z-index: 100;
   box-shadow: var(--shadow-nav);
+  border-bottom: 1px solid var(--color-border)
 }
 
 /* Inner wrapper aligns the three sections with the three page columns */
