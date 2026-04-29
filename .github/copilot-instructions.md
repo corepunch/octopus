@@ -48,7 +48,8 @@ octopus/
 │   ├── section-heading.handlebars
 │   ├── no-results.handlebars
 │   ├── no-following.handlebars
-│   └── empty-feed.handlebars
+│   ├── empty-feed.handlebars
+│   └── sign-in-prompt.handlebars
 │
 └── scripts/            # Bash provisioning / seeding scripts (no Node required)
     ├── provision-appwrite.sh
@@ -63,12 +64,10 @@ Each HTML page is standalone – it loads its own `<script>` tags in the order d
 
 **Never add a `package.json`, `node_modules`, or any build tool.**
 
-- All dependencies are loaded from CDN `<script>` tags, in this fixed order for every page:
+- All dependencies are loaded from CDN `<script>` tags. The **required** scripts that every page must load, in this fixed order:
 
   ```html
   <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.5/dist/purify.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/appwrite@16/dist/iife/sdk.js"></script>
   <script src="js/config.js"></script>
   <script src="js/appwrite.js"></script>
@@ -78,9 +77,17 @@ Each HTML page is standalone – it loads its own `<script>` tags in the order d
   <script src="js/pages/<page-name>.js"></script>
   ```
 
+- Add `marked` and `DOMPurify` **only on pages that render markdown** (currently `index.html`, `post.html`, `create.html`). Place them immediately before the Appwrite SDK script:
+
+  ```html
+  <script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.5/dist/purify.min.js"></script>
+  ```
+
+  `utils.js` guards every call with `typeof marked` / `typeof DOMPurify`, so pages that omit these scripts still work correctly.
+
 - The load order matters: `config.js` → `appwrite.js` → `templates.js` → `utils.js` → `auth.js` → page script.
-- `marked` and `DOMPurify` are optional at runtime; `utils.js` checks `typeof marked` / `typeof DOMPurify` before calling them.
-- Do **not** pin CDN versions unless there is a known breaking change. Pin the minor (`@4.7.8`) not the patch.
+- Pin CDN dependencies to their **exact version** as shown in the snippets above (e.g. `handlebars@4.7.8`, `dompurify@3.2.5`). Only update a pinned version when there is a known breaking change or security fix.
 - Provisioning and seeding scripts use only `bash`, `curl`, and `jq` – no Node.
 
 ---
@@ -89,7 +96,11 @@ Each HTML page is standalone – it loads its own `<script>` tags in the order d
 
 ### Philosophy
 
-All dynamic HTML **must** be produced by Handlebars templates. Never concatenate raw HTML strings in page JS. Use `renderTemplate(name, data)` (defined in `utils.js`) for every DOM insertion.
+Prefer Handlebars templates over raw HTML string concatenation in page JS. Use `renderTemplate(name, data)` (defined in `utils.js`) for every significant DOM insertion.
+
+> **Current exceptions** (avoid repeating these patterns in new code):
+> - `js/auth.js` renders the signed-out nav links via string literals because the fragment is trivial and static.
+> - Some pages render one-off error/not-found states as inline `<div class="empty-state">…</div>` strings. New error states should use a registered template instead.
 
 ### Template files
 
@@ -159,11 +170,13 @@ Register the partial with a dash-case name (e.g. `'post-card'`) then reference i
 
 ### Empty / loading states
 
-Always use a dedicated template (e.g. `empty-feed`, `no-results`, `no-following`) rather than raw strings. Loading indicators are the only exception:
+Use a dedicated template (e.g. `empty-feed`, `no-results`, `no-following`) for reusable empty states rather than inline strings. Loading indicators are the only exception; inline strings are acceptable there:
 
 ```js
 container.innerHTML = '<div class="loading">Loading…</div>';
 ```
+
+One-off, page-specific error messages (e.g. "Post not found") may also be inlined where a dedicated template would be overkill.
 
 ---
 
@@ -309,10 +322,11 @@ Every HTML page follows this structure:
   </aside>
 </div>
 
-<!-- CDN scripts, then local scripts in the fixed order -->
+<!-- Required CDN scripts in fixed order -->
 <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.5/dist/purify.min.js"></script>
+<!-- Add marked + DOMPurify only on pages that render markdown -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>   -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.5/dist/purify.min.js"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/appwrite@16/dist/iife/sdk.js"></script>
 <script src="js/config.js"></script>
 <script src="js/appwrite.js"></script>
@@ -330,10 +344,11 @@ Every HTML page follows this structure:
 
 There is no test runner or framework. Because there is no npm, do **not** add Jest, Mocha, or any other npm-based test tool.
 
-If you need to test utility functions or Handlebars helpers, write a plain `tests/<name>.test.html` file that:
-- Loads the same CDN scripts as a normal page.
-- Imports the JS file under test with a `<script>` tag.
-- Runs assertions using a minimal inline helper:
+The `tests/` directory holds plain HTML test files. To add tests for utility functions or Handlebars helpers, create `tests/<name>.test.html`:
+- Load the same CDN scripts as a normal page (add `marked`/`DOMPurify` if the file under test needs them).
+- Import the JS file under test with a `<script src="../js/…">` tag.
+- Run assertions using the inline helper below.
+- Open the file directly in a browser; all results appear in the console.
 
 ```js
 function assert(label, actual, expected) {
@@ -342,7 +357,7 @@ function assert(label, actual, expected) {
 }
 ```
 
-- Open the file directly in a browser; all results appear in the console.
+See `tests/utils.test.html` for a working example covering `timeAgo`, `excerpt`, `escapeHtml`, and `parseTags`.
 
 ---
 
