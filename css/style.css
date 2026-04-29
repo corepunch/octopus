@@ -370,6 +370,22 @@ a:hover { text-decoration: underline; }
   padding-left: 16px;
 }
 
+.muted-copy {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.label-note {
+  color: var(--color-text-subtle);
+  font-weight: normal;
+}
+
+.user-result-link {
+  font-weight: bold;
+  color: var(--color-text-strong);
+}
+
 /* Footer links widget inside the sidebar */
 .widget-footer-links {
   display: flex;
