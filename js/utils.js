@@ -3,6 +3,18 @@
  */
 
 /**
+ * Escape a string for safe HTML insertion.
+ */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Returns a human-friendly "time ago" string from an ISO date string.
  */
 function timeAgo(dateStr) {

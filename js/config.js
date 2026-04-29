@@ -1,16 +1,16 @@
 /**
- * Appwrite configuration
+ * Appwrite configuration – Octopus project
  *
- * Replace the placeholder values below with your own Appwrite project details.
- * See README.md for instructions on setting up your Appwrite project.
+ * These values are provisioned by scripts/provision-appwrite.sh.
+ * Do NOT commit a real API key here; the key lives only in GitHub Secrets.
  */
-const APPWRITE_ENDPOINT   = 'https://cloud.appwrite.io/v1';
-const APPWRITE_PROJECT_ID = 'YOUR_PROJECT_ID';     // e.g. '64abc123def45'
+const APPWRITE_ENDPOINT   = 'https://fra.cloud.appwrite.io/v1';
+const APPWRITE_PROJECT_ID = '69f1c06800389dc6a1a0';
 
-// Database
-const APPWRITE_DB_ID      = 'YOUR_DATABASE_ID';    // e.g. 'octopus-db'
+// Database (created by the provision script)
+const APPWRITE_DB_ID = 'octopus-db';
 
-// Collection IDs (must match what you create in the Appwrite console)
+// Collection IDs – must match what the provision script creates
 const COL_POSTS   = 'posts';
 const COL_FOLLOWS = 'follows';
 const COL_USERS   = 'profiles';

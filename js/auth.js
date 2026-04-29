@@ -72,9 +72,13 @@ async function renderNav() {
     linksEl.innerHTML = `
       <span id="nav-user-name">${escapeHtml(user.name)}</span>
       <a href="create.html" class="btn-nav-primary btn">+ New Post</a>
-      <a href="profile.html?id=${user.$id}">Profile</a>
-      <a href="#" onclick="logout();return false;">Sign Out</a>
+      <a href="profile.html?id=${escapeHtml(user.$id)}">Profile</a>
+      <a href="#" id="nav-sign-out">Sign Out</a>
     `;
+    document.getElementById('nav-sign-out').addEventListener('click', e => {
+      e.preventDefault();
+      logout();
+    });
   } else {
     linksEl.innerHTML = `
       <a href="search.html">Search</a>
@@ -84,11 +88,4 @@ async function renderNav() {
   }
 }
 
-// Utility used in nav rendering (defined here to avoid ordering issues)
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+// escapeHtml is defined in utils.js and loaded before auth.js on every page.

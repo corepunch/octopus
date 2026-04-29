@@ -51,7 +51,7 @@ async function renderPostSidebar(post) {
     const following = await isFollowing(post.authorId);
     authorHtml += `<div style="margin-top:10px;">
       <button id="follow-btn" class="btn ${following ? 'btn-secondary' : 'btn-primary'} btn-sm"
-        onclick="toggleFollow('${post.authorId}', this)">
+        data-target-id="${escapeHtml(post.authorId)}">
         ${following ? 'Unfollow' : 'Follow'}
       </button>
     </div>`;
@@ -75,7 +75,15 @@ async function renderPostSidebar(post) {
   } catch {}
 
   sidebar.innerHTML = authorHtml + morePosts;
-}
+
+  // Attach follow button listener after HTML is in the DOM
+  const followBtn = document.getElementById('follow-btn');
+  if (followBtn) {
+    followBtn.addEventListener('click', () => {
+      const targetId = followBtn.dataset.targetId;
+      toggleFollow(targetId, followBtn);
+    });
+  }
 
 async function isFollowing(targetId) {
   if (!currentUser) return false;

@@ -43,7 +43,7 @@ async function initProfile() {
       const following = await isFollowingUser(profileId);
       followBtn = `<button id="follow-btn"
         class="btn ${following ? 'btn-secondary' : 'btn-primary'} btn-sm"
-        onclick="toggleFollow('${profileId}', this)">
+        data-target-id="${escapeHtml(profileId)}">
         ${following ? 'Unfollow' : 'Follow'}
       </button>`;
     }
@@ -67,6 +67,15 @@ async function initProfile() {
       <h3 class="section-heading">Posts</h3>
       <div id="user-posts"><div class="loading">Loading posts…</div></div>
     `;
+
+    // Attach follow button listener after HTML is in the DOM
+    const btn = document.getElementById('follow-btn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.targetId;
+        toggleFollow(targetId, btn);
+      });
+    }
 
     loadUserPosts(profileId);
   } catch (err) {

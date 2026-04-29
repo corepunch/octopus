@@ -20,8 +20,8 @@
   <!-- Feed -->
   <div class="main-col">
     <div class="feed-tabs">
-      <button class="feed-tab active" data-tab="discover" onclick="loadPosts('discover')">Discover</button>
-      <button class="feed-tab"        data-tab="following" onclick="loadPosts('following')">Following</button>
+      <button class="feed-tab active" data-tab="discover">Discover</button>
+      <button class="feed-tab"        data-tab="following">Following</button>
     </div>
     <div id="posts"><div class="loading">Loading posts…</div></div>
   </div>
@@ -70,7 +70,7 @@
     <div class="widget-actions">
       <a href="create.html" class="btn btn-primary btn-sm">+ New Post</a>
       <a href="profile.html?id={{id}}" class="btn btn-secondary btn-sm">Profile</a>
-      <button class="btn btn-danger btn-sm" onclick="logout()">Sign Out</button>
+      <button class="btn btn-danger btn-sm" id="sidebar-sign-out">Sign Out</button>
     </div>
   </div>
 </script>

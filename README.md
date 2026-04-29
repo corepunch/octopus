@@ -1,2 +1,103 @@
-# octopus
-A simple Handlebars-based blog website
+# Octopus 🐙
+
+A minimal, early-Twitter–inspired blog website built with Handlebars, Marked.js, and [Appwrite](https://appwrite.io). No build step, no npm — everything is loaded via CDN.
+
+## Pages
+
+| Page | URL |
+|---|---|
+| Main feed (discover / following) | `index.html` |
+| Sign in | `signin.html` |
+| Sign up | `signup.html` |
+| Create post (live markdown preview) | `create.html` |
+| Search posts, people & #tags | `search.html` |
+| Single post (rendered markdown) | `post.html?id=<id>` |
+| User profile + follow/unfollow | `profile.html?id=<id>` |
+
+## Tech stack
+
+| Layer | Library | How |
+|---|---|---|
+| Templates | [Handlebars 4.7](https://handlebarsjs.com) | `<script type="text/x-handlebars-template">` + CDN |
+| Markdown | [Marked 11](https://marked.js.org) | CDN |
+| Backend | [Appwrite 16](https://appwrite.io) | Browser SDK via CDN |
+
+## Quick start
+
+### 1 — Fork & enable GitHub Pages
+
+Fork this repo, then go to **Settings → Pages** and set the source to  
+`GitHub Actions`. The `deploy.yml` workflow will publish the site on every push to `main`.
+
+### 2 — Add Appwrite platform
+
+In the [Appwrite Console](https://cloud.appwrite.io):
+
+1. Open project **Octopus** (`69f1c06800389dc6a1a0`).  
+2. **Overview → Platforms → Add Platform → Web**.  
+3. Set *Hostname* to your GitHub Pages domain  
+   (e.g. `youruser.github.io` or your custom domain).
+
+### 3 — Provision the database schema
+
+The database, collections, attributes, and indexes are created automatically  
+via `scripts/provision-appwrite.sh` — pure `curl`, no npm.
+
+**Option A – GitHub Actions (recommended)**
+
+1. In the repo: **Settings → Secrets and variables → Actions → New repository secret**.  
+   Name: `APPWRITE_API_KEY`, Value: your Appwrite server API key.
+2. Go to **Actions → Provision Appwrite Schema → Run workflow**.
+
+The workflow creates:
+
+| Collection | Key attributes | Indexes |
+|---|---|---|
+| `posts` | `title`, `content` (markdown), `authorId`, `authorName`, `tags[]`, `published` | full-text on `title`, key on `authorId` |
+| `follows` | `followerId`, `followingId` | key on each, unique pair |
+| `profiles` | `userId`, `username`, `bio` | unique `userId`, full-text `username` |
+
+**Option B – locally**
+
+```bash
+export APPWRITE_API_KEY=<your-key>
+bash scripts/provision-appwrite.sh
+```
+
+Requires: `curl`, `jq`.
+
+### 4 — Done
+
+Visit your GitHub Pages URL. Sign up, write a post in Markdown, follow other writers.
+
+## Project structure
+
+```
+octopus/
+├── css/style.css              # Early-Twitter–inspired theme
+├── js/
+│   ├── config.js              # Appwrite project IDs (edit if you fork)
+│   ├── appwrite.js            # Client init + connection ping
+│   ├── auth.js                # signIn / signUp / logout / renderNav
+│   ├── utils.js               # timeAgo, renderMarkdown, renderTemplate…
+│   └── pages/
+│       ├── index.js           # Feed (discover + following tabs)
+│       ├── signin.js
+│       ├── signup.js
+│       ├── create.js          # Live markdown preview
+│       ├── search.js          # Posts, people, #tag search
+│       ├── post.js            # Single post + follow author
+│       └── profile.js        # Profile + follower counts
+├── scripts/
+│   └── provision-appwrite.sh  # Appwrite schema setup (curl only)
+├── .github/workflows/
+│   ├── deploy.yml             # GitHub Pages publish on push to main
+│   └── provision.yml          # One-click Appwrite schema provisioning
+├── index.html
+├── signin.html
+├── signup.html
+├── create.html
+├── search.html
+├── post.html
+└── profile.html
+```

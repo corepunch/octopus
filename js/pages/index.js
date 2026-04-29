@@ -8,6 +8,12 @@ async function initFeed() {
   await renderNav();
   currentUser = await getCurrentUser();
   renderSidebarUser();
+
+  // Wire up feed tab buttons via event delegation (no inline onclick)
+  document.querySelectorAll('.feed-tab').forEach(btn => {
+    btn.addEventListener('click', () => loadPosts(btn.dataset.tab));
+  });
+
   loadPosts(activeTab);
 }
 
@@ -19,6 +25,11 @@ function renderSidebarUser() {
       name: currentUser.name,
       id:   currentUser.$id,
     });
+    // Attach sign-out listener after template is in the DOM
+    const signOutBtn = document.getElementById('sidebar-sign-out');
+    if (signOutBtn) {
+      signOutBtn.addEventListener('click', () => logout());
+    }
   } else {
     el.innerHTML = renderTemplate('tpl-guest-widget', {});
   }
