@@ -148,6 +148,15 @@ function iconLabel(name, label) {
 }
 
 /**
+ * Return just the icon SVG for icon-only controls.
+ * @param {string} name – icon key from ICONS
+ * @returns {string} safe HTML string – icon is always from ICONS
+ */
+function iconOnly(name) {
+  return (typeof ICONS !== 'undefined' && ICONS[name]) || '';
+}
+
+/**
  * Share a post using the Web Share API when available, falling back to
  * writing the post URL to the clipboard.
  *
@@ -168,4 +177,3 @@ document.addEventListener('click', function (e) {
   const btn = e.target.closest('[data-share-id]');
   if (btn) sharePost(btn.dataset.shareId, btn.dataset.shareTitle);
 });
-

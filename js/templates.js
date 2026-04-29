@@ -48,7 +48,7 @@
   const guestWidget = `
 <div class="widget">
   <h3>Join Octopus</h3>
-  <p style="font-size:13px;color:#666;margin-bottom:10px;">Follow writers and get personalised posts.</p>
+  <p class="muted-copy" style="margin-bottom:10px;">Follow writers and get personalised posts.</p>
   <div style="display:flex;gap:6px;">
     <a href="signin.html" class="btn btn-secondary btn-sm">{{icon "log-in"}} Sign In</a>
     <a href="signup.html" class="btn btn-primary btn-sm">{{icon "user-plus"}} Sign Up</a>
@@ -152,7 +152,7 @@
 <div class="post-card" style="display:flex;align-items:center;gap:12px;">
   <div class="avatar" style="width:40px;height:40px;font-size:18px;">{{initial username}}</div>
   <div>
-    <a href="profile.html?id={{urlEncode id}}" style="font-weight:bold;color:#1c2938;">{{username}}</a>
+    <a href="profile.html?id={{urlEncode id}}" class="user-result-link">{{username}}</a>
     {{#if bio}}<div class="post-excerpt" style="margin-top:3px;">{{bio}}</div>{{/if}}
   </div>
 </div>`;
@@ -168,10 +168,9 @@
 
   /** Signed-in navigation links. */
   const navAuth = `
-<span id="nav-user-name">{{name}}</span>
-<a href="create.html" class="btn-nav-primary btn">{{icon "pen-line"}} New Post</a>
-<a href="profile.html?id={{urlEncode id}}">{{icon "user"}} Profile</a>
-<a href="#" id="nav-sign-out">{{icon "log-out"}} Sign Out</a>`;
+<a href="create.html" class="btn-nav-primary btn" aria-label="New Post" title="New Post">{{icon "pen-line"}}</a>
+<a href="profile.html?id={{urlEncode id}}" aria-label="Profile" title="Profile">{{icon "user"}}</a>
+<a href="#" id="nav-sign-out" aria-label="Sign Out" title="Sign Out">{{icon "log-out"}}</a>`;
 
   // ── Register all templates as Handlebars partials ─────────────────────────
   const defs = {
