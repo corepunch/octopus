@@ -1,10 +1,4 @@
 node_modules/
 
-# Generated HTML pages – built from src/*.xml by scripts/build.sh
-/create.html
-/index.html
-/post.html
-/profile.html
-/search.html
-/signin.html
-/signup.html
+# Generated site output – built from src/*.xhtml by scripts/build.sh
+/dist/
