@@ -2,14 +2,27 @@
 <!--
   src/page.xsl – XSLT template for all Octopus pages.
 
+  Pages are authored as small XHTML files in src/ and transformed into dist/
+  HTML files by scripts/build.sh using xsltproc.  Edit the XHTML sources,
+  not the generated HTML files.
+
   Each page is defined as a small XHTML file (src/<name>.xhtml) that supplies
   only the unique body content and a few attributes:
 
     <page title="…"   – <title> text
           name="…"    – page script basename (js/pages/<name>.js)
+                         omit for type="static" pages with no page JS
+          type="…"    – layout type: "feed" (default) or "static"
           markdown="true|false">  – whether to include marked + DOMPurify
       <body>…page-specific HTML…</body>
     </page>
+
+  Layout types:
+    type="feed"   (default) – two-column layout with sidebar; includes
+                              js/pages/<name>.js and all runtime scripts.
+    type="static"           – no sidebar; centered single-column content via
+                              .static-col; auth/nav scripts still loaded so
+                              the nav bar renders, but no page-specific JS.
 
   The build script (scripts/build.sh) transforms every src/*.xhtml file into
   a root-level *.html file using xsltproc.
@@ -48,7 +61,9 @@
         <script src="js/templates.js"></script>
         <script src="js/utils.js"></script>
         <script src="js/auth.js"></script>
-        <script src="js/pages/{@name}.js"></script>
+        <xsl:if test="not(@type='static')">
+          <script src="js/pages/{@name}.js"></script>
+        </xsl:if>
 
       </body>
     </html>
