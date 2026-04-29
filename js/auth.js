@@ -45,18 +45,24 @@ async function logout() {
 async function ensureProfile(user) {
   try {
     await databases.getDocument(APPWRITE_DB_ID, COL_USERS, user.$id);
-  } catch {
-    // Profile doesn't exist yet – create it.
-    await databases.createDocument(
-      APPWRITE_DB_ID,
-      COL_USERS,
-      user.$id,
-      {
-        userId:   user.$id,
-        username: user.name,
-        bio:      '',
-      }
-    );
+  } catch (err) {
+    // Only create the profile when the document genuinely doesn't exist.
+    // Re-throw network errors, permission errors, etc. so the caller can
+    // surface a meaningful message instead of masking them.
+    if (err.code === 404) {
+      await databases.createDocument(
+        APPWRITE_DB_ID,
+        COL_USERS,
+        user.$id,
+        {
+          userId:   user.$id,
+          username: user.name,
+          bio:      '',
+        }
+      );
+    } else {
+      throw err;
+    }
   }
 }
 

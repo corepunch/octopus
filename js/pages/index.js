@@ -88,7 +88,7 @@ async function loadPosts(tab) {
       }))
       .join('');
   } catch (e) {
-    container.innerHTML = '<div class="empty-state"><p>Could not load posts. Check your Appwrite config.</p></div>';
+    container.innerHTML = `<div class="empty-state"><p>Could not load posts: ${escapeHtml(e.message || String(e))}</p></div>`;
     console.error(e);
   }
 }
