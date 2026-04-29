@@ -60,7 +60,7 @@
   const noFollowing = `
 <div class="empty-state">
   <p>You're not following anyone yet.</p>
-  <a href="search.html" class="btn btn-primary" style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;">{{icon "users"}} Find people to follow</a>
+  <a href="search.html" class="btn btn-primary" style="margin-top:12px;">{{icon "users"}} Find people to follow</a>
 </div>`;
 
   const emptyFeed = `
@@ -69,7 +69,7 @@
   const signInPrompt = `
 <div class="empty-state">
   <p>Sign in to see posts from writers you follow.</p>
-  <a href="signin.html" class="btn btn-primary" style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;">{{icon "log-in"}} Sign In</a>
+  <a href="signin.html" class="btn btn-primary" style="margin-top:12px;">{{icon "log-in"}} Sign In</a>
 </div>`;
 
   // ── post.html ─────────────────────────────────────────────────────────────
@@ -84,7 +84,7 @@
 </div>
 <div class="post-actions" style="margin-bottom:20px;">
   <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
-  <span class="action-btn" title="Repost coming soon">{{icon "repeat-2"}} Repost</span>
+  <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
 </div>
 <div class="markdown-body">{{markdown content}}</div>`;
 

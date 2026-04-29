@@ -98,14 +98,14 @@ async function toggleFollow(targetId, btn) {
       if (res.documents.length > 0) {
         await databases.deleteDocument(APPWRITE_DB_ID, COL_FOLLOWS, res.documents[0].$id);
       }
-      btn.innerHTML = (typeof ICONS !== 'undefined' ? ICONS['user-plus'] || '' : '') + ' Follow';
+      btn.innerHTML = iconLabel('user-plus', 'Follow');
       btn.className   = 'btn btn-primary btn-sm';
     } else {
       await databases.createDocument(APPWRITE_DB_ID, COL_FOLLOWS, ID.unique(), {
         followerId:  currentUser.$id,
         followingId: targetId,
       });
-      btn.innerHTML = (typeof ICONS !== 'undefined' ? ICONS['user-minus'] || '' : '') + ' Unfollow';
+      btn.innerHTML = iconLabel('user-minus', 'Unfollow');
       btn.className   = 'btn btn-secondary btn-sm';
     }
   } catch (err) {

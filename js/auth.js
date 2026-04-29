@@ -84,11 +84,10 @@ async function renderNav() {
       logout();
     });
   } else {
-    const ic = typeof ICONS !== 'undefined' ? ICONS : {};
     linksEl.innerHTML =
-      '<a href="search.html">' + (ic['search'] || '') + ' Search</a>' +
-      '<a href="signin.html">' + (ic['log-in'] || '') + ' Sign In</a>' +
-      '<a href="signup.html" class="btn-nav-primary btn">' + (ic['user-plus'] || '') + ' Sign Up</a>';
+      '<a href="search.html">'                                      + iconLabel('search',    'Search')   + '</a>' +
+      '<a href="signin.html">'                                      + iconLabel('log-in',    'Sign In')  + '</a>' +
+      '<a href="signup.html" class="btn-nav-primary btn">'          + iconLabel('user-plus', 'Sign Up')  + '</a>';
   }
 }
 

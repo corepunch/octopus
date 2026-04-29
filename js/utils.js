@@ -136,6 +136,18 @@ Handlebars.registerHelper('icon', (name) =>
 );
 
 /**
+ * Return an icon SVG followed by a space and the given label text.
+ * Convenience wrapper used in JS (not Handlebars) to keep button HTML concise.
+ * @param {string} name  – icon key from ICONS
+ * @param {string} label – visible button label
+ * @returns {string} safe HTML string – icon is always from ICONS (never user input)
+ */
+function iconLabel(name, label) {
+  const svg = (typeof ICONS !== 'undefined' && ICONS[name]) || '';
+  return svg + ' ' + escapeHtml(label);
+}
+
+/**
  * Share a post using the Web Share API when available, falling back to
  * writing the post URL to the clipboard.
  *
