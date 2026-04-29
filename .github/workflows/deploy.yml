@@ -30,6 +30,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install xsltproc
+        run: sudo apt-get install -y --no-install-recommends xsltproc
+
+      - name: Build HTML pages from XML sources
+        run: bash scripts/build.sh
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
