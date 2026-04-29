@@ -168,10 +168,9 @@
 
   /** Signed-in navigation links. */
   const navAuth = `
-<span id="nav-user-name">{{name}}</span>
-<a href="create.html" class="btn-nav-primary btn">{{icon "pen-line"}} New Post</a>
-<a href="profile.html?id={{urlEncode id}}">{{icon "user"}} Profile</a>
-<a href="#" id="nav-sign-out">{{icon "log-out"}} Sign Out</a>`;
+<a href="create.html" class="btn-nav-primary btn" aria-label="New Post" title="New Post">{{icon "pen-line"}}</a>
+<a href="profile.html?id={{urlEncode id}}" aria-label="Profile" title="Profile">{{icon "user"}}</a>
+<a href="#" id="nav-sign-out" aria-label="Sign Out" title="Sign Out">{{icon "log-out"}}</a>`;
 
   // ── Register all templates as Handlebars partials ─────────────────────────
   const defs = {

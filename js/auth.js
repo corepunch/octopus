@@ -86,9 +86,9 @@ async function renderNav() {
     });
   } else {
     linksEl.innerHTML =
-      '<a href="search.html">'                                      + iconLabel('search',    'Search')   + '</a>' +
-      '<a href="signin.html">'                                      + iconLabel('log-in',    'Sign In')  + '</a>' +
-      '<a href="signup.html" class="btn-nav-primary btn">'          + iconLabel('user-plus', 'Sign Up')  + '</a>';
+      '<a href="search.html" aria-label="Search" title="Search">' + iconOnly('search') + '</a>' +
+      '<a href="signin.html" aria-label="Sign In" title="Sign In">' + iconOnly('log-in') + '</a>' +
+      '<a href="signup.html" class="btn-nav-primary btn" aria-label="Sign Up" title="Sign Up">' + iconOnly('user-plus') + '</a>';
   }
 
   renderLeftNav(user);
