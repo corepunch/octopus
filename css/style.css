@@ -7,35 +7,37 @@
 
 :root {
   color-scheme: light;
-  --color-bg: var(--color-bg);
-  --color-surface: var(--color-white);
-  --color-surface-soft: var(--color-surface-soft);
-  --color-surface-muted: var(--color-surface-muted);
-  --color-nav: var(--color-text-strong);
-  --color-text: var(--color-text);
-  --color-text-strong: var(--color-text-strong);
-  --color-text-soft: var(--color-text-soft);
-  --color-text-muted: var(--color-text-muted);
-  --color-text-subtle: var(--color-text-subtle);
-  --color-border: var(--color-border);
-  --color-border-strong: var(--color-border-strong);
-  --color-border-hover: var(--color-border-hover);
-  --color-accent: var(--color-accent);
-  --color-accent-hover: var(--color-accent-hover);
-  --color-accent-soft: var(--color-accent-soft);
-  --color-danger: var(--color-danger);
-  --color-danger-bg: var(--color-danger-bg);
-  --color-danger-border: var(--color-danger-border);
-  --color-success: var(--color-success);
-  --color-success-bg: var(--color-success-bg);
-  --color-success-border: var(--color-success-border);
-  --color-white: var(--color-white);
-  --shadow-nav: var(--shadow-nav);
-  --hover-accent-bg: var(--hover-accent-bg);
-  --active-accent-bg: var(--active-accent-bg);
-  --nav-link-muted: var(--nav-link-muted);
-  --nav-link-hover-bg: var(--nav-link-hover-bg);
-  --focus-ring: var(--focus-ring);
+  --color-bg: #e8f4f8;
+  --color-surface: #fff;
+  --color-surface-soft: #f7fbfd;
+  --color-surface-muted: #f0f4f8;
+  --color-nav: #1c2938;
+  --color-text: #333;
+  --color-text-strong: #1c2938;
+  --color-text-soft: #444;
+  --color-text-muted: #666;
+  --color-text-subtle: #999;
+  --color-border: #e1e8ed;
+  --color-border-strong: #dce5ec;
+  --color-border-hover: #b0cfe0;
+  --color-accent: #0084b4;
+  --color-accent-hover: #0095cc;
+  --color-accent-soft: #c0deed;
+  --color-danger: #c0392b;
+  --color-danger-bg: #fde8e8;
+  --color-danger-border: #f5c6cb;
+  --color-success: #27ae60;
+  --color-success-bg: #e8f8e8;
+  --color-success-border: #c3e6cb;
+  --color-code-bg: #1c2938;
+  --color-code-text: #e8f4f8;
+  --color-white: #fff;
+  --shadow-nav: 0 1px 4px rgba(0,0,0,.4);
+  --hover-accent-bg: rgba(0,132,180,.08);
+  --active-accent-bg: rgba(0,132,180,.10);
+  --nav-link-muted: rgba(192,222,237,.7);
+  --nav-link-hover-bg: rgba(192,222,237,.15);
+  --focus-ring: rgba(0,132,180,.18);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -63,6 +65,8 @@
     --color-success: #74d99f;
     --color-success-bg: #183126;
     --color-success-border: #2f6848;
+    --color-code-bg: #0b1117;
+    --color-code-text: #d8e3ec;
     --shadow-nav: 0 1px 4px rgba(0,0,0,.7);
     --hover-accent-bg: rgba(76,183,232,.12);
     --active-accent-bg: rgba(76,183,232,.18);
@@ -86,7 +90,7 @@ a:hover { text-decoration: underline; }
 
 /* ── Navigation ─────────────────────────────────────────── */
 #nav {
-  background: var(--color-text-strong);
+  background: var(--color-nav);
   height: 44px;
   position: sticky;
   top: 0;
@@ -267,7 +271,7 @@ a:hover { text-decoration: underline; }
 
 /* ── Post cards ──────────────────────────────────────────── */
 .post-card {
-  background: var(--color-white);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 14px 16px;
@@ -336,7 +340,7 @@ a:hover { text-decoration: underline; }
 
 /* ── Sidebar widgets (in right column) ───────────────────── */
 .widget {
-  background: var(--color-white);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 14px;
@@ -398,10 +402,10 @@ a:hover { text-decoration: underline; }
 .btn-primary { background: var(--color-accent); color: var(--color-white); border-color: var(--color-accent); }
 .btn-primary:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }
 
-.btn-secondary { background: var(--color-white); color: var(--color-accent); border-color: var(--color-accent); }
-.btn-secondary:hover { background: var(--color-bg); }
+.btn-secondary { background: var(--color-surface); color: var(--color-accent); border-color: var(--color-accent); }
+.btn-secondary:hover { background: var(--color-surface-muted); }
 
-.btn-danger { background: var(--color-white); color: var(--color-danger); border-color: var(--color-danger); }
+.btn-danger { background: var(--color-surface); color: var(--color-danger); border-color: var(--color-danger); }
 .btn-danger:hover { background: var(--color-danger-bg); }
 
 .btn-sm { padding: 4px 10px; font-size: 12px; }
@@ -409,7 +413,7 @@ a:hover { text-decoration: underline; }
 
 /* ── Forms ───────────────────────────────────────────────── */
 .card {
-  background: var(--color-white);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 28px 28px 24px;
@@ -443,7 +447,7 @@ a:hover { text-decoration: underline; }
   font-family: inherit;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
-  background: var(--color-white);
+  background: var(--color-surface);
   color: var(--color-text);
 }
 .form-control:focus {
@@ -521,8 +525,8 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   font-family: "SFMono-Regular", Consolas, monospace;
 }
 .markdown-body pre {
-  background: var(--color-text-strong);
-  color: var(--color-bg);
+  background: var(--color-code-bg);
+  color: var(--color-code-text);
   padding: 14px 16px;
   border-radius: 6px;
   overflow-x: auto;
@@ -559,7 +563,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   gap: 16px;
   margin-bottom: 20px;
   padding: 16px;
-  background: var(--color-white);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 6px;
 }
