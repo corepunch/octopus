@@ -49,17 +49,20 @@ async function ensureProfile(user) {
     // Only create the profile when the document genuinely doesn't exist.
     // Re-throw network errors, permission errors, etc. so the caller can
     // surface a meaningful message instead of masking them.
-    if (err.code !== 404) throw err;
-    await databases.createDocument(
-      APPWRITE_DB_ID,
-      COL_USERS,
-      user.$id,
-      {
-        userId:   user.$id,
-        username: user.name,
-        bio:      '',
-      }
-    );
+    if (err.code === 404) {
+      await databases.createDocument(
+        APPWRITE_DB_ID,
+        COL_USERS,
+        user.$id,
+        {
+          userId:   user.$id,
+          username: user.name,
+          bio:      '',
+        }
+      );
+    } else {
+      throw err;
+    }
   }
 }
 
