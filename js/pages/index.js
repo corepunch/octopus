@@ -94,8 +94,3 @@ async function loadPosts(tab) {
 }
 
 document.addEventListener('DOMContentLoaded', initFeed);
-
-// CommonJS export – used by the Jest test suite; ignored in the browser.
-if (typeof module !== 'undefined') {
-  module.exports = { loadPosts, initFeed, renderSidebarUser };
-}

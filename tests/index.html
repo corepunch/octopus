@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<!--
+  tests/index.html – browser-based unit tests for Octopus.
+
+  Open this file directly in a browser (file:// or any static server).
+  No build step, no npm, no dependencies.
+
+  Covers the two bugs that were fixed:
+    1. ensureProfile() silently swallowed all getDocument() errors.
+    2. loadPosts() showed a hardcoded generic error string.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Octopus – Tests</title>
+  <style>
+    body  { font-family: monospace; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+    .pass { color: #1a8a1a; }
+    .fail { color: #c0392b; font-weight: bold; }
+    hr    { border: none; border-top: 1px solid #ddd; margin: 24px 0; }
+    #summary { font-size: 1.1em; font-weight: bold; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<h1>🐙 Octopus – Tests</h1>
+<div id="results"></div>
+<div id="summary"></div>
+
+<!-- DOM fixture required by loadPosts() -->
+<div id="posts"></div>
+<button class="feed-tab" data-tab="discover">Discover</button>
+<button class="feed-tab" data-tab="following">Following</button>
+
+<script>
+// ── Global stubs ──────────────────────────────────────────────────────────────
+// These mirror what the real pages set up via config.js + appwrite.js.
+
+window.APPWRITE_DB_ID      = 'octopus-db';
+window.APPWRITE_PROJECT_ID = 'test-project';
+window.APPWRITE_ENDPOINT   = 'https://example.com/v1';
+window.COL_POSTS           = 'posts';
+window.COL_FOLLOWS         = 'follows';
+window.COL_USERS           = 'profiles';
+
+window.ID    = { unique: () => 'unique-id' };
+window.Query = {
+  equal:     (a, v) => `equal(${a},${v})`,
+  orderDesc: (a)    => `orderDesc(${a})`,
+  limit:     (n)    => `limit(${n})`,
+};
+
+// Replaceable stubs – tests overwrite these per scenario.
+window.databases = {
+  getDocument:    () => Promise.resolve({}),
+  createDocument: () => Promise.resolve({}),
+  listDocuments:  () => Promise.resolve({ documents: [] }),
+};
+window.account = {
+  get:                        () => Promise.reject({ code: 401 }),
+  create:                     () => Promise.resolve({ $id: 'u1' }),
+  createEmailPasswordSession: () => Promise.resolve({}),
+  deleteSession:              () => Promise.resolve(),
+};
+
+window.renderTemplate = (name) => `<div data-template="${name}"></div>`;
+window.renderNav      = async () => {};
+
+window.escapeHtml = (str) =>
+  String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+// Prevent DOMContentLoaded handlers registered inside source scripts from
+// running the full page-init logic during the test run.
+const _realAddEventListener = document.addEventListener.bind(document);
+document.addEventListener = (type, fn, ...rest) => {
+  if (type === 'DOMContentLoaded') return;
+  _realAddEventListener(type, fn, ...rest);
+};
+</script>
+
+<!-- Source files under test (loaded after stubs, before test runner) -->
+<script src="../js/auth.js"></script>
+<script src="../js/pages/index.js"></script>
+
+<script>
+// Restore addEventListener now that source scripts are parsed.
+document.addEventListener = _realAddEventListener;
+
+// ── Minimal test runner ───────────────────────────────────────────────────────
+
+const resultsEl = document.getElementById('results');
+let passed = 0, failed = 0;
+
+function log(name, ok, detail) {
+  const el = document.createElement('div');
+  el.className = ok ? 'pass' : 'fail';
+  el.textContent = (ok ? '✓ ' : '✗ ') + name + (detail ? '  (' + detail + ')' : '');
+  resultsEl.appendChild(el);
+  ok ? passed++ : failed++;
+}
+
+// ── Tests ─────────────────────────────────────────────────────────────────────
+
+async function runTests() {
+
+  resultsEl.insertAdjacentHTML('beforeend', '<hr><h2>ensureProfile()</h2>');
+
+  // 1. Does nothing when the profile document already exists.
+  {
+    let createCalled = false;
+    databases.getDocument    = () => Promise.resolve({ $id: 'u1' });
+    databases.createDocument = () => { createCalled = true; return Promise.resolve({}); };
+
+    await ensureProfile({ $id: 'u1', name: 'Alice' });
+    log('skips createDocument when profile already exists', !createCalled);
+  }
+
+  // 2. Creates profile document when getDocument returns 404.
+  {
+    let created = null;
+    databases.getDocument    = () => Promise.reject({ code: 404 });
+    databases.createDocument = (db, col, id, data) => { created = { id, data }; return Promise.resolve({}); };
+
+    await ensureProfile({ $id: 'u2', name: 'Bob' });
+    log(
+      'calls createDocument with correct data on 404',
+      created !== null && created.id === 'u2' && created.data.username === 'Bob'
+    );
+  }
+
+  // 3. Rethrows network errors – the original "Load failed" bug.
+  {
+    let createCalled = false;
+    const netErr = Object.assign(new Error('Load failed'), { code: 0 });
+    databases.getDocument    = () => Promise.reject(netErr);
+    databases.createDocument = () => { createCalled = true; return Promise.resolve({}); };
+
+    let caught = null;
+    try { await ensureProfile({ $id: 'u3', name: 'Carol' }); }
+    catch (e) { caught = e; }
+
+    log(
+      'rethrows network error ("Load failed") without calling createDocument',
+      caught !== null && caught.message === 'Load failed' && !createCalled
+    );
+  }
+
+  // 4. Rethrows unexpected server errors (5xx).
+  {
+    let createCalled = false;
+    databases.getDocument    = () => Promise.reject(Object.assign(new Error('Server Error'), { code: 500 }));
+    databases.createDocument = () => { createCalled = true; return Promise.resolve({}); };
+
+    let caught = null;
+    try { await ensureProfile({ $id: 'u4', name: 'Dave' }); }
+    catch (e) { caught = e; }
+
+    log('rethrows 500 server error without calling createDocument',
+      caught !== null && !createCalled);
+  }
+
+  // 5. Rethrows errors that have no .code property (plain JS errors).
+  {
+    let createCalled = false;
+    databases.getDocument    = () => Promise.reject(new Error('Failed to fetch'));
+    databases.createDocument = () => { createCalled = true; return Promise.resolve({}); };
+
+    let caught = null;
+    try { await ensureProfile({ $id: 'u5', name: 'Eve' }); }
+    catch (e) { caught = e; }
+
+    log('rethrows errors with no .code (e.g. "Failed to fetch")',
+      caught !== null && caught.message === 'Failed to fetch' && !createCalled);
+  }
+
+  resultsEl.insertAdjacentHTML('beforeend', '<hr><h2>loadPosts()</h2>');
+
+  // 6. Surfaces the real error message – not a generic config string.
+  {
+    databases.listDocuments = () => Promise.reject(new Error('Load failed'));
+    await loadPosts('discover');
+    const html = document.getElementById('posts').innerHTML;
+    log(
+      'shows real error text on failure (not a generic config string)',
+      html.includes('Load failed') && !html.includes('Check your Appwrite config')
+    );
+  }
+
+  // 7. Renders empty-feed template when no documents are returned.
+  {
+    databases.listDocuments = () => Promise.resolve({ documents: [] });
+    let templateUsed = null;
+    window.renderTemplate = (name) => { templateUsed = name; return `<div data-template="${name}"></div>`; };
+
+    await loadPosts('discover');
+    log('renders empty-feed template when no posts', templateUsed === 'empty-feed');
+    window.renderTemplate = (name) => `<div data-template="${name}"></div>`;
+  }
+
+  // 8. Renders post-card templates for each returned document.
+  {
+    databases.listDocuments = () => Promise.resolve({ documents: [{
+      $id: 'p1', title: 'Hello', authorId: 'u1', authorName: 'Alice',
+      content: 'Content', tags: [], $createdAt: '2024-01-01T00:00:00Z',
+    }]});
+    let lastTemplate = null;
+    window.renderTemplate = (name) => { lastTemplate = name; return `<div data-template="${name}"></div>`; };
+
+    await loadPosts('discover');
+    log('renders post-card template for each document', lastTemplate === 'post-card');
+    window.renderTemplate = (name) => `<div data-template="${name}"></div>`;
+  }
+
+  // 9. Shows sign-in prompt on the following tab when unauthenticated.
+  {
+    // currentUser is null at this point (never set in test env).
+    let templateUsed = null;
+    window.renderTemplate = (name) => { templateUsed = name; return `<div data-template="${name}"></div>`; };
+
+    await loadPosts('following');
+    log('shows sign-in-prompt on following tab when unauthenticated',
+      templateUsed === 'sign-in-prompt');
+    window.renderTemplate = (name) => `<div data-template="${name}"></div>`;
+  }
+
+  // ── Summary ───────────────────────────────────────────────────────────────
+  const summary = document.getElementById('summary');
+  summary.textContent = `${passed + failed} tests: ${passed} passed, ${failed} failed.`;
+  summary.style.color = failed === 0 ? '#1a8a1a' : '#c0392b';
+  document.title = `Tests: ${passed}✓ ${failed}✗`;
+}
+
+runTests().catch(err => {
+  const el = document.createElement('pre');
+  el.style.color = '#c0392b';
+  el.textContent = 'Test runner error: ' + (err.stack || err);
+  resultsEl.appendChild(el);
+});
+</script>
+
+</body>
+</html>

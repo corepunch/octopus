@@ -92,8 +92,3 @@ async function renderNav() {
 }
 
 // escapeHtml is defined in utils.js and loaded before auth.js on every page.
-
-// CommonJS export – used by the Jest test suite; ignored in the browser.
-if (typeof module !== 'undefined') {
-  module.exports = { getCurrentUser, signIn, signUp, ensureProfile, logout, renderNav };
-}
