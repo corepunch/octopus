@@ -1,0 +1,7 @@
+<h1 class="post-page-title">{{title}}</h1>
+<div class="post-page-meta">
+  By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
+  · {{timeAgo createdAt}}
+  {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
+</div>
+<div class="markdown-body">{{markdown content}}</div>

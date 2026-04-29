@@ -176,6 +176,15 @@ aw POST "/databases/$DB_ID/collections/posts/indexes" "$(jq -n \
     orders:     ["ASC"]
   }')" >/dev/null
 
+# Key index on tags (array containment queries for tag search)
+aw POST "/databases/$DB_ID/collections/posts/indexes" "$(jq -n \
+  '{
+    key:        "idx_tags",
+    type:       "key",
+    attributes: ["tags"],
+    orders:     ["ASC"]
+  }')" >/dev/null
+
 info "Collection 'posts' done."
 
 # ── 3. Collection: follows ─────────────────────────────────────────────────────

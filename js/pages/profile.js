@@ -1,6 +1,6 @@
 /**
  * profile.js – user profile page.
- * All HTML is rendered by Handlebars templates defined in profile.html.
+ * All HTML is rendered by Handlebars partials registered in js/templates.js.
  */
 let currentUser = null;
 
@@ -38,7 +38,7 @@ async function initProfile() {
     const showFollow = !!(currentUser && !isOwn);
     const isFollowing = showFollow ? await isFollowingUser(profileId) : false;
 
-    container.innerHTML = renderTemplate('tpl-profile-header', {
+    container.innerHTML = renderTemplate('profile-header', {
       profileId,
       username:    profile.username,
       bio:         profile.bio || '',
@@ -78,7 +78,7 @@ async function loadUserPosts(profileId) {
     }
 
     el.innerHTML = res.documents
-      .map(post => renderTemplate('tpl-post-card', {
+      .map(post => renderTemplate('post-card', {
         id:         post.$id,
         title:      post.title,
         authorId:   post.authorId,

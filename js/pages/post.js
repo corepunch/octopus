@@ -1,6 +1,6 @@
 /**
  * post.js – single post view.
- * All HTML is rendered by Handlebars templates defined in post.html.
+ * All HTML is rendered by Handlebars partials registered in js/templates.js.
  */
 let currentUser = null;
 
@@ -19,7 +19,7 @@ async function initPost() {
 
     document.title = `${post.title} – Octopus`;
 
-    container.innerHTML = renderTemplate('tpl-post-header', {
+    container.innerHTML = renderTemplate('post-header', {
       title:      post.title,
       authorId:   post.authorId,
       authorName: post.authorName,
@@ -42,7 +42,7 @@ async function renderPostSidebar(post) {
   const showFollow = !!(currentUser && currentUser.$id !== post.authorId);
   const following  = showFollow ? await isFollowing(post.authorId) : false;
 
-  sidebar.innerHTML = renderTemplate('tpl-post-author', {
+  sidebar.innerHTML = renderTemplate('post-author', {
     authorId:   post.authorId,
     authorName: post.authorName,
     showFollow,
@@ -63,7 +63,7 @@ async function renderPostSidebar(post) {
       Query.limit(5),
     ]);
     if (more.documents.length > 0) {
-      sidebar.innerHTML += renderTemplate('tpl-more-posts', {
+      sidebar.innerHTML += renderTemplate('more-posts', {
         authorName: post.authorName,
         posts:      more.documents.map(p => ({ id: p.$id, title: p.title })),
       });

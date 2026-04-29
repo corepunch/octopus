@@ -1,0 +1,11 @@
+<div class="post-card">
+  <a href="post.html?id={{id}}" class="post-card-title">{{title}}</a>
+  <div class="post-meta">
+    by <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
+    · {{timeAgo createdAt}}
+  </div>
+  <p class="post-excerpt">{{excerpt content}}</p>
+  <div>
+    {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
+  </div>
+</div>

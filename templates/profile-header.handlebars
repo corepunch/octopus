@@ -1,0 +1,25 @@
+<div class="profile-header">
+  <div class="avatar">{{initial username}}</div>
+  <div class="profile-info">
+    <h2>{{username}}</h2>
+    {{#if bio}}<p class="bio">{{bio}}</p>{{/if}}
+    <div class="profile-stats">
+      <span><strong>{{followers}}</strong> followers</span>
+      <span><strong>{{following}}</strong> following</span>
+      <span><strong>{{posts}}</strong> posts</span>
+    </div>
+    <div style="margin-top:10px;">
+      {{#if isOwn}}
+        <a href="settings.html" class="btn btn-secondary btn-sm">Edit Profile</a>
+      {{else if showFollow}}
+        <button id="follow-btn"
+          class="btn {{#if isFollowing}}btn-secondary{{else}}btn-primary{{/if}} btn-sm"
+          data-target-id="{{profileId}}">
+          {{#if isFollowing}}Unfollow{{else}}Follow{{/if}}
+        </button>
+      {{/if}}
+    </div>
+  </div>
+</div>
+<h3 class="section-heading">Posts</h3>
+<div id="user-posts"><div class="loading">Loading posts…</div></div>

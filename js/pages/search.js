@@ -1,6 +1,6 @@
 /**
  * search.js – search page logic.
- * All HTML is rendered by Handlebars templates defined in search.html.
+ * All HTML is rendered by Handlebars partials registered in js/templates.js.
  */
 async function initSearch() {
   await renderNav();
@@ -37,8 +37,9 @@ async function doSearch() {
     if (raw.startsWith('#')) {
       const tagVal = raw.slice(1).toLowerCase();
       [postDocs, userDocs] = await Promise.all([
+        // tags is a key-indexed array field; Query.equal checks for containment.
         databases.listDocuments(APPWRITE_DB_ID, COL_POSTS, [
-          Query.search('tags', tagVal),
+          Query.equal('tags', tagVal),
           Query.orderDesc('$createdAt'),
           Query.limit(30),
         ]),
@@ -61,9 +62,9 @@ async function doSearch() {
     let html = '';
 
     if (userDocs.documents.length > 0) {
-      html += renderTemplate('tpl-section-heading', { title: 'People' });
+      html += renderTemplate('section-heading', { title: 'People' });
       html += userDocs.documents
-        .map(u => renderTemplate('tpl-user-result', {
+        .map(u => renderTemplate('user-result', {
           id:       u.userId,
           username: u.username,
           bio:      u.bio || '',
@@ -72,9 +73,9 @@ async function doSearch() {
     }
 
     if (postDocs.documents.length > 0) {
-      html += renderTemplate('tpl-section-heading', { title: 'Posts' });
+      html += renderTemplate('section-heading', { title: 'Posts' });
       html += postDocs.documents
-        .map(post => renderTemplate('tpl-post-result', {
+        .map(post => renderTemplate('post-card', {
           id:         post.$id,
           title:      post.title,
           authorId:   post.authorId,
@@ -87,7 +88,7 @@ async function doSearch() {
     }
 
     if (!html) {
-      html = renderTemplate('tpl-no-results', { query: raw });
+      html = renderTemplate('no-results', { query: raw });
     }
 
     container.innerHTML = html;

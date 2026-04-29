@@ -62,7 +62,9 @@ async function ensureProfile(user) {
 
 /**
  * Render the navigation bar depending on auth state.
- * Uses Handlebars.compile() so all values are automatically escaped.
+ * Uses the 'nav-auth' Handlebars partial (registered in js/templates.js)
+ * so all values are auto-escaped; the urlEncode helper ensures the profile
+ * ID is correctly percent-encoded in the href query string.
  */
 async function renderNav() {
   const user = await getCurrentUser();
@@ -70,13 +72,7 @@ async function renderNav() {
   if (!linksEl) return;
 
   if (user) {
-    linksEl.innerHTML = Handlebars.compile(
-      '<span id="nav-user-name">{{name}}</span>' +
-      '<a href="create.html" class="btn-nav-primary btn">+ New Post</a>' +
-      '<a href="profile.html?id={{id}}">Profile</a>' +
-      '<a href="#" id="nav-sign-out">Sign Out</a>'
-    )({ name: user.name, id: user.$id });
-
+    linksEl.innerHTML = renderTemplate('nav-auth', { name: user.name, id: user.$id });
     document.getElementById('nav-sign-out').addEventListener('click', e => {
       e.preventDefault();
       logout();

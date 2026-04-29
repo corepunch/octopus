@@ -29,11 +29,16 @@ function timeAgo(dateStr) {
 }
 
 /**
- * Render markdown to sanitised HTML using Marked.
+ * Render markdown to safe HTML.
+ * Uses DOMPurify to sanitize the output when available, preventing XSS from
+ * user-generated content that contains raw HTML inside the markdown source.
  */
 function renderMarkdown(md) {
-  if (typeof marked === 'undefined') return escapeHtml(md);
-  return marked.parse(md || '');
+  const source = md || '';
+  if (typeof marked === 'undefined') return escapeHtml(source);
+  const rawHtml = marked.parse(source);
+  if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(rawHtml);
+  return rawHtml;
 }
 
 /**
@@ -74,16 +79,19 @@ function hideAlert(id) {
 }
 
 /**
- * Compile and render a Handlebars template embedded in the page.
- * @param {string} templateId – id of the <script type="text/x-handlebars-template"> element
- * @param {object} data       – context data
+ * Render a registered Handlebars partial by name.
+ * All templates are registered in js/templates.js via Handlebars.registerPartial().
+ * @param {string} name – partial name (e.g. 'post-card')
+ * @param {object} data – context data passed to the template
  * @returns {string} rendered HTML
  */
-function renderTemplate(templateId, data) {
-  const src = document.getElementById(templateId);
-  if (!src) return '';
-  const template = Handlebars.compile(src.innerHTML);
-  return template(data);
+function renderTemplate(name, data) {
+  const fn = Handlebars.partials[name];
+  if (typeof fn !== 'function') {
+    console.error(`Template "${name}" not registered. Check js/templates.js.`);
+    return '';
+  }
+  return fn(data);
 }
 
 /**

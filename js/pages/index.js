@@ -1,6 +1,6 @@
 /**
  * index.js – main feed page logic.
- * All HTML is rendered by Handlebars templates defined in index.html.
+ * All HTML is rendered by Handlebars partials registered in js/templates.js.
  */
 let currentUser = null;
 let activeTab   = 'discover';
@@ -22,7 +22,7 @@ function renderSidebarUser() {
   const el = document.getElementById('sidebar-user');
   if (!el) return;
   if (currentUser) {
-    el.innerHTML = renderTemplate('tpl-user-widget', {
+    el.innerHTML = renderTemplate('user-widget', {
       name: currentUser.name,
       id:   currentUser.$id,
     });
@@ -31,7 +31,7 @@ function renderSidebarUser() {
       signOutBtn.addEventListener('click', () => logout());
     }
   } else {
-    el.innerHTML = renderTemplate('tpl-guest-widget', {});
+    el.innerHTML = renderTemplate('guest-widget', {});
   }
 }
 
@@ -44,14 +44,19 @@ async function loadPosts(tab) {
 
   try {
     let docs;
-    if (tab === 'following' && currentUser) {
+    if (tab === 'following') {
+      // Following tab requires authentication
+      if (!currentUser) {
+        container.innerHTML = renderTemplate('sign-in-prompt', {});
+        return;
+      }
       const follows = await databases.listDocuments(APPWRITE_DB_ID, COL_FOLLOWS, [
         Query.equal('followerId', currentUser.$id),
         Query.limit(50),
       ]);
       const ids = follows.documents.map(f => f.followingId);
       if (ids.length === 0) {
-        container.innerHTML = renderTemplate('tpl-no-following', {});
+        container.innerHTML = renderTemplate('no-following', {});
         return;
       }
       docs = await databases.listDocuments(APPWRITE_DB_ID, COL_POSTS, [
@@ -67,12 +72,12 @@ async function loadPosts(tab) {
     }
 
     if (docs.documents.length === 0) {
-      container.innerHTML = renderTemplate('tpl-empty-feed', {});
+      container.innerHTML = renderTemplate('empty-feed', {});
       return;
     }
 
     container.innerHTML = docs.documents
-      .map(post => renderTemplate('tpl-post-card', {
+      .map(post => renderTemplate('post-card', {
         id:         post.$id,
         title:      post.title,
         authorId:   post.authorId,
