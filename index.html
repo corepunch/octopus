@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Octopus – Blog Feed</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ── Navigation ──────────────────────────────────────────── -->
+<nav id="nav">
+  <a class="nav-logo" href="index.html">🐙 Octopus</a>
+  <div class="nav-links" id="nav-links"></div>
+</nav>
+
+<!-- ── Page content ────────────────────────────────────────── -->
+<div class="page-wrap">
+
+  <!-- Feed -->
+  <div class="main-col">
+    <div class="feed-tabs">
+      <button class="feed-tab active" data-tab="discover" onclick="loadPosts('discover')">Discover</button>
+      <button class="feed-tab"        data-tab="following" onclick="loadPosts('following')">Following</button>
+    </div>
+    <div id="posts"><div class="loading">Loading posts…</div></div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div id="sidebar-user"></div>
+
+    <div class="widget">
+      <h3>About</h3>
+      <p style="font-size:13px;color:#666;line-height:1.5;">
+        Octopus is an open markdown blog. Write, share, and follow writers who inspire you.
+      </p>
+    </div>
+
+    <div class="widget">
+      <h3>Search</h3>
+      <form action="search.html" method="GET" style="display:flex;gap:6px;">
+        <input class="form-control" name="q" placeholder="Posts, people, #tags…" style="flex:1;font-size:13px;" />
+        <button type="submit" class="btn btn-primary btn-sm">Go</button>
+      </form>
+    </div>
+  </aside>
+
+</div>
+
+<!-- ── Handlebars templates ─────────────────────────────────── -->
+<script id="tpl-post-card" type="text/x-handlebars-template">
+  <div class="post-card">
+    <a href="post.html?id={{id}}" class="post-card-title">{{title}}</a>
+    <div class="post-meta">
+      by <a href="profile.html?id={{authorId}}" class="author-link">{{authorName}}</a>
+      · {{timeAgo}}
+    </div>
+    <p class="post-excerpt">{{excerpt}}</p>
+    <div>
+      {{#each tags}}<a href="search.html?tag={{this}}" class="tag">#{{this}}</a>{{/each}}
+    </div>
+  </div>
+</script>
+
+<script id="tpl-user-widget" type="text/x-handlebars-template">
+  <div class="widget">
+    <h3>You</h3>
+    <div class="widget-user-name"><a href="profile.html?id={{id}}">{{name}}</a></div>
+    <div class="widget-actions">
+      <a href="create.html" class="btn btn-primary btn-sm">+ New Post</a>
+      <a href="profile.html?id={{id}}" class="btn btn-secondary btn-sm">Profile</a>
+      <button class="btn btn-danger btn-sm" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+</script>
+
+<script id="tpl-guest-widget" type="text/x-handlebars-template">
+  <div class="widget">
+    <h3>Join Octopus</h3>
+    <p style="font-size:13px;color:#666;margin-bottom:10px;">Follow writers and get personalised posts.</p>
+    <div style="display:flex;gap:6px;">
+      <a href="signin.html" class="btn btn-secondary btn-sm">Sign In</a>
+      <a href="signup.html" class="btn btn-primary btn-sm">Sign Up</a>
+    </div>
+  </div>
+</script>
+
+<!-- ── Scripts ─────────────────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@16/dist/iife/sdk.js"></script>
+<script src="js/config.js"></script>
+<script src="js/appwrite.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/pages/index.js"></script>
+
+</body>
+</html>
