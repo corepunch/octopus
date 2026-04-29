@@ -126,3 +126,34 @@ Handlebars.registerHelper('markdown', (text) =>
   new Handlebars.SafeString(renderMarkdown(text))
 );
 
+/**
+ * {{icon "name"}} → inline SVG string (SafeString, sourced from ICONS in icons.js).
+ * Always use this helper for icons inside templates instead of hard-coding SVG.
+ * Example: {{icon "pen-line"}} New Post
+ */
+Handlebars.registerHelper('icon', (name) =>
+  new Handlebars.SafeString((typeof ICONS !== 'undefined' && ICONS[name]) || '')
+);
+
+/**
+ * Share a post using the Web Share API when available, falling back to
+ * writing the post URL to the clipboard.
+ *
+ * @param {string} id    – post document $id
+ * @param {string} title – post title (used as share title)
+ */
+function sharePost(id, title) {
+  const url = new URL('post.html?id=' + encodeURIComponent(id), window.location.href).href;
+  if (navigator.share) {
+    navigator.share({ title: title || 'Octopus post', url }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).catch(() => {});
+  }
+}
+
+// Global click delegation for share buttons rendered inside dynamic templates.
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('[data-share-id]');
+  if (btn) sharePost(btn.dataset.shareId, btn.dataset.shareTitle);
+});
+

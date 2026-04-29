@@ -20,6 +20,7 @@ async function initPost() {
     document.title = `${post.title} – Octopus`;
 
     container.innerHTML = renderTemplate('post-header', {
+      id:         post.$id,
       title:      post.title,
       authorId:   post.authorId,
       authorName: post.authorName,
@@ -87,7 +88,7 @@ async function toggleFollow(targetId, btn) {
   if (!currentUser) { window.location.href = 'signin.html'; return; }
   btn.disabled = true;
   try {
-    const isUnfollowing = btn.textContent.trim() === 'Unfollow';
+    const isUnfollowing = btn.textContent.trim().startsWith('Unfollow');
     if (isUnfollowing) {
       const res = await databases.listDocuments(APPWRITE_DB_ID, COL_FOLLOWS, [
         Query.equal('followerId', currentUser.$id),
@@ -97,14 +98,14 @@ async function toggleFollow(targetId, btn) {
       if (res.documents.length > 0) {
         await databases.deleteDocument(APPWRITE_DB_ID, COL_FOLLOWS, res.documents[0].$id);
       }
-      btn.textContent = 'Follow';
+      btn.innerHTML = (typeof ICONS !== 'undefined' ? ICONS['user-plus'] || '' : '') + ' Follow';
       btn.className   = 'btn btn-primary btn-sm';
     } else {
       await databases.createDocument(APPWRITE_DB_ID, COL_FOLLOWS, ID.unique(), {
         followerId:  currentUser.$id,
         followingId: targetId,
       });
-      btn.textContent = 'Unfollow';
+      btn.innerHTML = (typeof ICONS !== 'undefined' ? ICONS['user-minus'] || '' : '') + ' Unfollow';
       btn.className   = 'btn btn-secondary btn-sm';
     }
   } catch (err) {

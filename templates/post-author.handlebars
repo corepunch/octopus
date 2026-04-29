@@ -6,7 +6,7 @@
     <button id="follow-btn"
       class="btn {{#if following}}btn-secondary{{else}}btn-primary{{/if}} btn-sm"
       data-target-id="{{authorId}}">
-      {{#if following}}Unfollow{{else}}Follow{{/if}}
+      {{#if following}}{{icon "user-minus"}} Unfollow{{else}}{{icon "user-plus"}} Follow{{/if}}
     </button>
   </div>
   {{/if}}

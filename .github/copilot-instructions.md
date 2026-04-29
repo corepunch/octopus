@@ -24,7 +24,8 @@ octopus/
 │   ├── config.js       # Appwrite endpoint / project / collection IDs
 │   ├── appwrite.js     # Appwrite SDK initialisation (client, account, databases)
 │   ├── templates.js    # All Handlebars templates compiled + registered as partials
-│   ├── utils.js        # Shared helpers (escapeHtml, timeAgo, renderTemplate, …)
+│   ├── utils.js        # Shared helpers (escapeHtml, timeAgo, renderTemplate, sharePost, …)
+│   ├── icons.js        # Lucide SVG icon strings + {{icon}} Handlebars helper
 │   ├── auth.js         # getCurrentUser, signIn, signUp, logout, renderNav
 │   └── pages/
 │       ├── index.js    # Feed page logic
@@ -86,7 +87,7 @@ Each HTML page is standalone – it loads its own `<script>` tags in the order d
 
   `utils.js` guards every call with `typeof marked` / `typeof DOMPurify`, so pages that omit these scripts still work correctly.
 
-- The load order matters: `config.js` → `appwrite.js` → `templates.js` → `utils.js` → `auth.js` → page script.
+- The load order matters: `config.js` → `appwrite.js` → `templates.js` → `utils.js` → `icons.js` → `auth.js` → page script.
 - Pin CDN dependencies to their **exact version** as shown in the snippets above (e.g. `handlebars@4.7.8`, `dompurify@3.2.5`). Only update a pinned version when there is a known breaking change or security fix.
 - Provisioning and seeding scripts use only `bash`, `curl`, and `jq` – no Node.
 
@@ -119,6 +120,7 @@ Prefer Handlebars templates over raw HTML string concatenation in page JS. Use `
 | `{{initial name}}` | `{{initial username}}` | first character, uppercased |
 | `{{urlEncode str}}` | `{{urlEncode authorId}}` | URI-encoded value |
 | `{{markdown content}}` | `{{markdown content}}` | rendered + sanitised HTML (`SafeString`) |
+| `{{icon name}}` | `{{icon "pen-line"}}` | inline Lucide SVG (`SafeString`) |
 
 Use these helpers inside templates instead of pre-computing values in JS. For example:
 
@@ -332,6 +334,7 @@ Every HTML page follows this structure:
 <script src="js/appwrite.js"></script>
 <script src="js/templates.js"></script>
 <script src="js/utils.js"></script>
+<script src="js/icons.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/pages/<page-name>.js"></script>
 </body>
@@ -364,8 +367,74 @@ See `tests/utils.test.html` for a working example covering `timeAgo`, `excerpt`,
 ## CSS
 
 - All styles live in `css/style.css`. Do not add inline `<style>` blocks.
-- Use the existing utility classes: `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-sm`, `.btn-nav-primary`, `.alert`, `.alert-error`, `.alert-success`, `.loading`, `.empty-state`, `.post-card`, `.widget`, `.form-group`, `.form-control`, `.tag`, `.avatar`.
+- Use the existing utility classes: `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-sm`, `.btn-nav-primary`, `.alert`, `.alert-error`, `.alert-success`, `.loading`, `.empty-state`, `.post-card`, `.widget`, `.form-group`, `.form-control`, `.tag`, `.avatar`, `.post-actions`, `.action-btn`.
 - Inline styles are acceptable only for one-off layout tweaks directly on an element (e.g. `style="margin-top:10px"`), matching the existing code style.
+
+---
+
+## Icons
+
+### Source
+
+All icons come from **[Lucide](https://lucide.dev)** (MIT licence, https://lucide.dev).
+They are inlined as SVG strings in `js/icons.js` — **no CDN script tag is needed**.
+The SVGs use `stroke="currentColor"` so they inherit the surrounding text / button colour automatically.
+
+### Available icons
+
+| Key | Usage |
+|---|---|
+| `pen-line` | Write / New Post |
+| `user` | Profile |
+| `log-out` | Sign Out |
+| `log-in` | Sign In |
+| `user-plus` | Sign Up / Follow |
+| `user-minus` | Unfollow |
+| `search` | Search |
+| `users` | Find people / followers list |
+| `settings` | Edit Profile |
+| `message-circle` | Comment |
+| `repeat-2` | Repost |
+| `share-2` | Share |
+| `x` | Cancel / close |
+| `send` | Publish / submit |
+
+To add a new icon: copy the SVG path data from https://lucide.dev, add an entry to the `ICONS` object in `js/icons.js`, and document it in this table.
+
+### Using icons in Handlebars templates
+
+Use the `{{icon "name"}}` helper (registered in `utils.js`). It returns the SVG as a `SafeString` — the icon name is always a hard-coded string, never user input.
+
+```handlebars
+<a href="create.html" class="btn btn-primary btn-sm">{{icon "pen-line"}} New Post</a>
+<button class="btn btn-danger btn-sm">{{icon "log-out"}} Sign Out</button>
+```
+
+Always put the icon **before** the label text with a single space separator.
+
+### Using icons in static HTML (xhtml source files)
+
+For buttons and links that are hard-coded in `src/*.xhtml`, add a `data-icon="name"` attribute.
+`js/icons.js` processes these automatically at `DOMContentLoaded`:
+
+```xml
+<button class="btn btn-primary" type="submit" data-icon="search">Search</button>
+<a href="index.html" class="btn btn-secondary" data-icon="x">Cancel</a>
+```
+
+### Using icons in plain JS string concatenation
+
+When building HTML strings in JS (e.g. `auth.js` signed-out nav), reference `ICONS` directly:
+
+```js
+'<a href="signin.html">' + ICONS['log-in'] + ' Sign In</a>'
+```
+
+Guard with `typeof ICONS !== 'undefined'` if the call-site might run before `icons.js` loads.
+
+### Post action bar
+
+Post cards and the single-post view include a `.post-actions` bar with `.action-btn` elements for comment, share, and repost. The share button carries `data-share-id` and `data-share-title` attributes; a document-level click listener in `utils.js` calls `sharePost(id, title)`, which uses the Web Share API with a clipboard fallback.
 
 ---
 

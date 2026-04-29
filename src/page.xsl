@@ -47,6 +47,7 @@
         <script src="js/appwrite.js"></script>
         <script src="js/templates.js"></script>
         <script src="js/utils.js"></script>
+        <script src="js/icons.js"></script>
         <script src="js/auth.js"></script>
         <script src="js/pages/{@name}.js"></script>
 

@@ -10,12 +10,12 @@
     </div>
     <div style="margin-top:10px;">
       {{#if isOwn}}
-        <a href="settings.html" class="btn btn-secondary btn-sm">Edit Profile</a>
+        <a href="settings.html" class="btn btn-secondary btn-sm">{{icon "settings"}} Edit Profile</a>
       {{else if showFollow}}
         <button id="follow-btn"
           class="btn {{#if isFollowing}}btn-secondary{{else}}btn-primary{{/if}} btn-sm"
           data-target-id="{{profileId}}">
-          {{#if isFollowing}}Unfollow{{else}}Follow{{/if}}
+          {{#if isFollowing}}{{icon "user-minus"}} Unfollow{{else}}{{icon "user-plus"}} Follow{{/if}}
         </button>
       {{/if}}
     </div>

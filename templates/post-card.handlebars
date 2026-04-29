@@ -8,4 +8,8 @@
   <div>
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
+  <div class="post-actions">
+    <a href="post.html?id={{id}}" class="action-btn">{{icon "message-circle"}} Comment</a>
+    <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+  </div>
 </div>
