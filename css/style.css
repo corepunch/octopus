@@ -147,7 +147,13 @@ a:hover { text-decoration: underline; }
 }
 
 .main-col { min-width: 0; padding: 16px 20px; border-left: 1px solid #dce5ec; border-right: 1px solid #dce5ec; }
-.right-col { padding: 16px 0 40px 20px; }
+.right-col {
+  padding: 16px 0 40px 20px;
+  position: sticky;
+  top: 44px;
+  max-height: calc(100vh - 44px);
+  overflow-y: auto;
+}
 
 /* Centered single-column forms */
 .center-col {
@@ -283,6 +289,13 @@ a:hover { text-decoration: underline; }
   color: #1c2938;
 }
 .widget-actions { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+.tip-list {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.8;
+  padding-left: 16px;
+}
 
 /* Footer links widget inside the sidebar */
 .widget-footer-links {

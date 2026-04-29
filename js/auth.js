@@ -105,7 +105,8 @@ function renderLeftNav(user) {
   const currentPath = window.location.pathname.split('/').pop() || 'index.html';
 
   function navItem(href, icon, label, isButton) {
-    const active = href && currentPath === href ? ' active' : '';
+    const baseName = href ? href.split('?')[0] : '';
+    const active = baseName && currentPath === baseName ? ' active' : '';
     if (isButton) {
       return '<button class="left-nav-item' + active + '" id="left-nav-sign-out">' +
         iconLabel(icon, label) + '</button>';
