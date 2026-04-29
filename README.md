@@ -1,4 +1,6 @@
-# Octopus 🐙
+<img width="1983" height="793" alt="83595cd3-f1e2-4b52-8491-f395057580f2" src="https://github.com/user-attachments/assets/f6be6ab3-023b-47e1-bfac-7755197248b8" />
+
+---
 
 A minimal, early-Twitter–inspired blog website built with Handlebars, Marked.js, and [Appwrite](https://appwrite.io). No build step, no npm — everything is loaded via CDN.
 
