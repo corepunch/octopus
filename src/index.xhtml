@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page title="Octopus – Blog Feed" name="index" markdown="true">
+  <body>
+
+    <div class="page-wrap">
+
+      <!-- Feed -->
+      <div class="main-col">
+        <div class="feed-tabs">
+          <button class="feed-tab active" data-tab="discover">Discover</button>
+          <button class="feed-tab"        data-tab="following">Following</button>
+        </div>
+        <div id="posts"><div class="loading">Loading posts…</div></div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div id="sidebar-user"></div>
+
+        <div class="widget">
+          <h3>About</h3>
+          <p style="font-size:13px;color:#666;line-height:1.5;">
+            Octopus is an open markdown blog. Write, share, and follow writers who inspire you.
+          </p>
+        </div>
+
+        <div class="widget">
+          <h3>Search</h3>
+          <form action="search.html" method="GET" style="display:flex;gap:6px;">
+            <input class="form-control" name="q" placeholder="Posts, people, #tags…" style="flex:1;font-size:13px;"/>
+            <button type="submit" class="btn btn-primary btn-sm">Go</button>
+          </form>
+        </div>
+      </aside>
+
+    </div>
+
+  </body>
+</page>

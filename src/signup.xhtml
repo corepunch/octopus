@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page title="Sign Up – Octopus" name="signup" markdown="false">
+  <body>
+
+    <div class="center-col">
+      <div class="card">
+        <h1 class="card-title">Create an Account</h1>
+
+        <div class="alert" id="alert"></div>
+
+        <form id="signup-form" novalidate="novalidate">
+          <div class="form-group">
+            <label for="name">Display name</label>
+            <input class="form-control" id="name" type="text" placeholder="Your name" required="required" autocomplete="name"/>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <input class="form-control" id="email" type="email" placeholder="you@example.com" required="required" autocomplete="email"/>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password <span style="color:#999;font-weight:normal;">(min. 8 characters)</span></label>
+            <input class="form-control" id="password" type="password" placeholder="••••••••" required="required" autocomplete="new-password"/>
+          </div>
+
+          <div class="form-group">
+            <label for="confirm">Confirm password</label>
+            <input class="form-control" id="confirm" type="password" placeholder="••••••••" required="required" autocomplete="new-password"/>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="btn-signup" type="submit">Create Account</button>
+        </form>
+
+        <p class="form-footer">
+          Already have an account? <a href="signin.html">Sign in</a>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</page>

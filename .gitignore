@@ -1,1 +1,4 @@
 node_modules/
+
+# Generated site output – built from src/*.xhtml by scripts/build.sh
+/dist/
