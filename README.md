@@ -15,6 +15,10 @@ A minimal, early-Twitter–inspired blog website built with Handlebars, Marked.j
 | Search posts, people & #tags | `search.html` |
 | Single post (rendered markdown) | `post.html?id=<id>` |
 | User profile + follow/unfollow | `profile.html?id=<id>` |
+| About | `about.html` |
+| Terms of Service | `terms.html` |
+| Privacy Policy | `privacy.html` |
+| Impressum | `impressum.html` |
 
 ## Tech stack
 
@@ -99,7 +103,11 @@ octopus/
 │   ├── create.xhtml
 │   ├── search.xhtml
 │   ├── post.xhtml
-│   └── profile.xhtml
+│   ├── profile.xhtml
+│   ├── about.xhtml                # Static page (type="static")
+│   ├── terms.xhtml                # Static page (type="static")
+│   ├── privacy.xhtml              # Static page (type="static")
+│   └── impressum.xhtml            # Static page (type="static")
 ├── css/style.css                  # Early-Twitter–inspired theme
 ├── js/
 │   ├── config.js                  # Appwrite project IDs (edit if you fork)
@@ -128,6 +136,10 @@ octopus/
     ├── search.html
     ├── post.html
     ├── profile.html
+    ├── about.html
+    ├── terms.html
+    ├── privacy.html
+    ├── impressum.html
     ├── css/ → (copied)
     ├── js/  → (copied)
     └── templates/ → (copied)

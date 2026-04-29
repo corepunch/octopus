@@ -9,13 +9,19 @@ These instructions capture the conventions established across agent sessions so 
 
 ```
 octopus/
-├── index.html          # Feed page
-├── post.html           # Single post
-├── profile.html        # User profile
-├── search.html         # Search (posts + users)
-├── create.html         # Create / edit post
-├── signin.html         # Sign-in form
-├── signup.html         # Registration form
+├── src/                # XHTML page sources — edit these, not the generated HTML
+│   ├── page.xsl        # Shared XSLT template (nav, head, script tags)
+│   ├── index.xhtml
+│   ├── signin.xhtml
+│   ├── signup.xhtml
+│   ├── create.xhtml
+│   ├── search.xhtml
+│   ├── post.xhtml
+│   ├── profile.xhtml
+│   ├── about.xhtml
+│   ├── terms.xhtml
+│   ├── privacy.xhtml
+│   └── impressum.xhtml
 │
 ├── css/
 │   └── style.css       # Single global stylesheet
@@ -57,6 +63,46 @@ octopus/
 ```
 
 Each HTML page is standalone – it loads its own `<script>` tags in the order described below and calls `document.addEventListener('DOMContentLoaded', initXxx)`.
+
+---
+
+## XHTML + XSLT build system
+
+### How pages are authored
+
+- **Never edit generated HTML files directly.** All pages are authored as small XHTML files in `src/` and transformed into `dist/*.html` by `scripts/build.sh` using `xsltproc`.
+- The shared template `src/page.xsl` wraps every page with the `<nav>`, `<head>`, and CDN `<script>` tags.
+- To build locally: `bash scripts/build.sh` (requires `xsltproc` — `apt install xsltproc` or `brew install libxslt`).
+
+### Page element attributes
+
+```xml
+<page title="…"           ← <title> text
+      name="…"            ← page script basename (js/pages/<name>.js); omit for static pages
+      type="feed|static"  ← layout type (default: "feed")
+      markdown="true|false">  ← include marked + DOMPurify CDN scripts
+  <body>…page HTML…</body>
+</page>
+```
+
+### Layout types
+
+| `type` | Description |
+|---|---|
+| `feed` (default) | Two-column layout with sidebar. Page JS (`js/pages/<name>.js`) is loaded. Use for interactive pages with Appwrite data. |
+| `static` | No sidebar. Content is wrapped in `.static-col` (680 px centred). No page-specific JS — auth/nav scripts are still loaded so the nav bar renders. Use for legal pages, About, etc. |
+
+### Adding a new feed page
+
+1. Create `src/<name>.xhtml` with `<page title="…" name="<name>" type="feed">`.
+2. Create `js/pages/<name>.js` with the page logic.
+3. Place the two-column layout (`.page-wrap`, `.main-col`, `.sidebar`) inside `<body>`.
+
+### Adding a new static page
+
+1. Create `src/<name>.xhtml` with `<page title="…" type="static">` (no `name` attribute needed).
+2. Place content inside `<div class="static-col">…</div>` within `<body>`.
+3. No page-specific JS file is required.
 
 ---
 
