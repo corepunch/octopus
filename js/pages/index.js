@@ -95,8 +95,8 @@ async function loadPosts(tab) {
     const isNetworkError = e instanceof TypeError;
     const hint = isNetworkError
       ? ' Check that this origin is added as a Web Platform in the Appwrite Console.'
-      : '';
-    container.innerHTML = `<div class="empty-state"><p>Could not load posts: ${escapeHtml(e.message || String(e))}.${hint}</p></div>`;
+      : '.';
+    container.innerHTML = `<div class="empty-state"><p>Could not load posts: ${escapeHtml(e.message || String(e))}${hint}</p></div>`;
     console.error(e);
   }
 }
