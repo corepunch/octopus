@@ -96,3 +96,25 @@ function parseTags(str) {
     .filter(t => t.length > 0)
     .slice(0, 10);
 }
+
+// ── Handlebars helpers ────────────────────────────────────────────────────────
+// These let templates call helpers directly, e.g. {{timeAgo createdAt}}
+// instead of requiring pre-computed values to be passed from JS.
+
+/** {{timeAgo isoDateString}} → "3h ago" */
+Handlebars.registerHelper('timeAgo', (date) => timeAgo(date));
+
+/** {{excerpt content}} → stripped, truncated plain text */
+Handlebars.registerHelper('excerpt', (text) => excerpt(text));
+
+/** {{initial name}} → first character, uppercased */
+Handlebars.registerHelper('initial', (name) => (name?.[0] || '?').toUpperCase());
+
+/** {{urlEncode str}} → URI-encoded value safe for query strings */
+Handlebars.registerHelper('urlEncode', (str) => encodeURIComponent(str));
+
+/** {{markdown content}} → rendered HTML (SafeString, not double-escaped) */
+Handlebars.registerHelper('markdown', (text) =>
+  new Handlebars.SafeString(renderMarkdown(text))
+);
+

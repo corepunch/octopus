@@ -39,21 +39,26 @@
 </div>
 
 <!-- ── Handlebars templates ─────────────────────────────────── -->
+
+<!-- Post result card -->
 <script id="tpl-post-result" type="text/x-handlebars-template">
   <div class="post-card">
     <a href="post.html?id={{id}}" class="post-card-title">{{title}}</a>
     <div class="post-meta">
       by <a href="profile.html?id={{authorId}}" class="author-link">{{authorName}}</a>
-      · {{timeAgo}}
+      · {{timeAgo createdAt}}
     </div>
-    <p class="post-excerpt">{{excerpt}}</p>
-    <div>{{#each tags}}<a href="search.html?tag={{this}}" class="tag">#{{this}}</a>{{/each}}</div>
+    <p class="post-excerpt">{{excerpt content}}</p>
+    <div>
+      {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
+    </div>
   </div>
 </script>
 
+<!-- User result card -->
 <script id="tpl-user-result" type="text/x-handlebars-template">
   <div class="post-card" style="display:flex;align-items:center;gap:12px;">
-    <div class="avatar" style="width:40px;height:40px;font-size:18px;">{{initial}}</div>
+    <div class="avatar" style="width:40px;height:40px;font-size:18px;">{{initial username}}</div>
     <div>
       <a href="profile.html?id={{id}}" style="font-weight:bold;color:#1c2938;">{{username}}</a>
       {{#if bio}}<div class="post-excerpt" style="margin-top:3px;">{{bio}}</div>{{/if}}
@@ -61,12 +66,24 @@
   </div>
 </script>
 
+<!-- Section heading (People / Posts) -->
+<script id="tpl-section-heading" type="text/x-handlebars-template">
+  <h3 class="section-heading">{{title}}</h3>
+</script>
+
+<!-- No results found -->
+<script id="tpl-no-results" type="text/x-handlebars-template">
+  <div class="empty-state">
+    <p>No results found for "<strong>{{query}}</strong>".</p>
+  </div>
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/appwrite@16/dist/iife/sdk.js"></script>
 <script src="js/config.js"></script>
 <script src="js/appwrite.js"></script>
-<script src="js/auth.js"></script>
 <script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/pages/search.js"></script>
 
 </body>

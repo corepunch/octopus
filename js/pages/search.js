@@ -1,5 +1,6 @@
 /**
  * search.js – search page logic.
+ * All HTML is rendered by Handlebars templates defined in search.html.
  */
 async function initSearch() {
   await renderNav();
@@ -25,7 +26,6 @@ async function doSearch() {
   const container = document.getElementById('results');
   container.innerHTML = '<div class="loading">Searching…</div>';
 
-  // Update URL without reload
   const url = new URL(window.location.href);
   url.searchParams.set('q', raw);
   url.searchParams.delete('tag');
@@ -34,7 +34,6 @@ async function doSearch() {
   try {
     let postDocs, userDocs;
 
-    // Tag search (#hashtag)
     if (raw.startsWith('#')) {
       const tagVal = raw.slice(1).toLowerCase();
       [postDocs, userDocs] = await Promise.all([
@@ -46,7 +45,6 @@ async function doSearch() {
         Promise.resolve({ documents: [] }),
       ]);
     } else {
-      // Full-text search on title + username
       [postDocs, userDocs] = await Promise.all([
         databases.listDocuments(APPWRITE_DB_ID, COL_POSTS, [
           Query.search('title', raw),
@@ -63,39 +61,38 @@ async function doSearch() {
     let html = '';
 
     if (userDocs.documents.length > 0) {
-      html += `<h3 class="section-heading">People</h3>`;
+      html += renderTemplate('tpl-section-heading', { title: 'People' });
       html += userDocs.documents
         .map(u => renderTemplate('tpl-user-result', {
           id:       u.userId,
           username: u.username,
           bio:      u.bio || '',
-          initial:  (u.username || '?')[0].toUpperCase(),
         }))
         .join('');
     }
 
     if (postDocs.documents.length > 0) {
-      html += `<h3 class="section-heading" style="margin-top:${userDocs.documents.length ? 20 : 0}px">Posts</h3>`;
+      html += renderTemplate('tpl-section-heading', { title: 'Posts' });
       html += postDocs.documents
         .map(post => renderTemplate('tpl-post-result', {
           id:         post.$id,
           title:      post.title,
           authorId:   post.authorId,
           authorName: post.authorName,
-          excerpt:    excerpt(post.content),
-          tags:       (post.tags || []),
-          timeAgo:    timeAgo(post.$createdAt),
+          content:    post.content,
+          tags:       post.tags || [],
+          createdAt:  post.$createdAt,
         }))
         .join('');
     }
 
     if (!html) {
-      html = `<div class="empty-state"><p>No results found for "<strong>${escapeHtml(raw)}</strong>".</p></div>`;
+      html = renderTemplate('tpl-no-results', { query: raw });
     }
 
     container.innerHTML = html;
   } catch (err) {
-    container.innerHTML = `<div class="empty-state"><p>Search failed. Ensure full-text indexes are set up in Appwrite.</p></div>`;
+    container.innerHTML = '<div class="empty-state"><p>Search failed. Ensure full-text indexes are set up in Appwrite.</p></div>';
     console.error(err);
   }
 }

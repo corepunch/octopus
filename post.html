@@ -25,13 +25,56 @@
   </aside>
 </div>
 
+<!-- ── Handlebars templates ─────────────────────────────────── -->
+
+<!-- Post title, meta and rendered markdown body -->
+<script id="tpl-post-header" type="text/x-handlebars-template">
+  <h1 class="post-page-title">{{title}}</h1>
+  <div class="post-page-meta">
+    By <a href="profile.html?id={{authorId}}" class="author-link">{{authorName}}</a>
+    · {{timeAgo createdAt}}
+    {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
+  </div>
+  <div class="markdown-body">{{markdown content}}</div>
+</script>
+
+<!-- Sidebar: author widget (with optional follow/unfollow button) -->
+<script id="tpl-post-author" type="text/x-handlebars-template">
+  <div class="widget">
+    <h3>Author</h3>
+    <a href="profile.html?id={{authorId}}" style="font-weight:bold;">{{authorName}}</a>
+    {{#if showFollow}}
+    <div style="margin-top:10px;">
+      <button id="follow-btn"
+        class="btn {{#if following}}btn-secondary{{else}}btn-primary{{/if}} btn-sm"
+        data-target-id="{{authorId}}">
+        {{#if following}}Unfollow{{else}}Follow{{/if}}
+      </button>
+    </div>
+    {{/if}}
+  </div>
+</script>
+
+<!-- Sidebar: more posts from the same author -->
+<script id="tpl-more-posts" type="text/x-handlebars-template">
+  <div class="widget">
+    <h3>More from {{authorName}}</h3>
+    {{#each posts}}
+    <div style="margin-bottom:8px;">
+      <a href="post.html?id={{id}}">{{title}}</a>
+    </div>
+    {{/each}}
+  </div>
+</script>
+
+<!-- ── Scripts ─────────────────────────────────────────────── -->
 <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/appwrite@16/dist/iife/sdk.js"></script>
 <script src="js/config.js"></script>
 <script src="js/appwrite.js"></script>
-<script src="js/auth.js"></script>
 <script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/pages/post.js"></script>
 
 </body>

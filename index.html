@@ -49,20 +49,23 @@
 </div>
 
 <!-- ── Handlebars templates ─────────────────────────────────── -->
+
+<!-- Post card: title, author, time, excerpt, tags -->
 <script id="tpl-post-card" type="text/x-handlebars-template">
   <div class="post-card">
     <a href="post.html?id={{id}}" class="post-card-title">{{title}}</a>
     <div class="post-meta">
       by <a href="profile.html?id={{authorId}}" class="author-link">{{authorName}}</a>
-      · {{timeAgo}}
+      · {{timeAgo createdAt}}
     </div>
-    <p class="post-excerpt">{{excerpt}}</p>
+    <p class="post-excerpt">{{excerpt content}}</p>
     <div>
-      {{#each tags}}<a href="search.html?tag={{this}}" class="tag">#{{this}}</a>{{/each}}
+      {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
     </div>
   </div>
 </script>
 
+<!-- Sidebar widget shown when the user is signed in -->
 <script id="tpl-user-widget" type="text/x-handlebars-template">
   <div class="widget">
     <h3>You</h3>
@@ -75,6 +78,7 @@
   </div>
 </script>
 
+<!-- Sidebar widget shown when the user is signed out -->
 <script id="tpl-guest-widget" type="text/x-handlebars-template">
   <div class="widget">
     <h3>Join Octopus</h3>
@@ -86,14 +90,27 @@
   </div>
 </script>
 
+<!-- Empty state: Following tab, not following anyone yet -->
+<script id="tpl-no-following" type="text/x-handlebars-template">
+  <div class="empty-state">
+    <p>You're not following anyone yet.</p>
+    <a href="search.html" class="btn btn-primary" style="margin-top:12px;display:inline-block;">Find people to follow</a>
+  </div>
+</script>
+
+<!-- Empty state: Discover tab, no posts in the database yet -->
+<script id="tpl-empty-feed" type="text/x-handlebars-template">
+  <div class="empty-state"><p>No posts yet. Be the first!</p></div>
+</script>
+
 <!-- ── Scripts ─────────────────────────────────────────────── -->
 <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/appwrite@16/dist/iife/sdk.js"></script>
 <script src="js/config.js"></script>
 <script src="js/appwrite.js"></script>
-<script src="js/auth.js"></script>
 <script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/pages/index.js"></script>
 
 </body>

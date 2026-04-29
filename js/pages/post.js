@@ -1,5 +1,6 @@
 /**
  * post.js – single post view.
+ * All HTML is rendered by Handlebars templates defined in post.html.
  */
 let currentUser = null;
 
@@ -18,19 +19,15 @@ async function initPost() {
 
     document.title = `${post.title} – Octopus`;
 
-    container.innerHTML = `
-      <h1 class="post-page-title">${escapeHtml(post.title)}</h1>
-      <div class="post-page-meta">
-        By <a href="profile.html?id=${post.authorId}" class="author-link">${escapeHtml(post.authorName)}</a>
-        · ${timeAgo(post.$createdAt)}
-        ${(post.tags || []).map(t => `<a href="search.html?tag=${encodeURIComponent(t)}" class="tag">#${escapeHtml(t)}</a>`).join(' ')}
-      </div>
-      <div class="markdown-body" id="post-body"></div>
-    `;
+    container.innerHTML = renderTemplate('tpl-post-header', {
+      title:      post.title,
+      authorId:   post.authorId,
+      authorName: post.authorName,
+      createdAt:  post.$createdAt,
+      content:    post.content,
+      tags:       post.tags || [],
+    });
 
-    document.getElementById('post-body').innerHTML = renderMarkdown(post.content);
-
-    // Sidebar
     renderPostSidebar(post);
   } catch (err) {
     container.innerHTML = '<div class="empty-state"><p>Post not found.</p></div>';
@@ -42,24 +39,22 @@ async function renderPostSidebar(post) {
   const sidebar = document.getElementById('sidebar-content');
   if (!sidebar) return;
 
-  // Author profile info
-  let authorHtml = `<div class="widget">
-    <h3>Author</h3>
-    <a href="profile.html?id=${post.authorId}" style="font-weight:bold;">${escapeHtml(post.authorName)}</a>`;
+  const showFollow = !!(currentUser && currentUser.$id !== post.authorId);
+  const following  = showFollow ? await isFollowing(post.authorId) : false;
 
-  if (currentUser && currentUser.$id !== post.authorId) {
-    const following = await isFollowing(post.authorId);
-    authorHtml += `<div style="margin-top:10px;">
-      <button id="follow-btn" class="btn ${following ? 'btn-secondary' : 'btn-primary'} btn-sm"
-        data-target-id="${escapeHtml(post.authorId)}">
-        ${following ? 'Unfollow' : 'Follow'}
-      </button>
-    </div>`;
+  sidebar.innerHTML = renderTemplate('tpl-post-author', {
+    authorId:   post.authorId,
+    authorName: post.authorName,
+    showFollow,
+    following,
+  });
+
+  const followBtn = document.getElementById('follow-btn');
+  if (followBtn) {
+    followBtn.addEventListener('click', () => toggleFollow(post.authorId, followBtn));
   }
-  authorHtml += '</div>';
 
-  // More posts by same author
-  let morePosts = '';
+  // More posts by the same author
   try {
     const more = await databases.listDocuments(APPWRITE_DB_ID, COL_POSTS, [
       Query.equal('authorId', post.authorId),
@@ -68,22 +63,13 @@ async function renderPostSidebar(post) {
       Query.limit(5),
     ]);
     if (more.documents.length > 0) {
-      morePosts = `<div class="widget"><h3>More from ${escapeHtml(post.authorName)}</h3>
-        ${more.documents.map(p => `<div style="margin-bottom:8px;"><a href="post.html?id=${p.$id}">${escapeHtml(p.title)}</a></div>`).join('')}
-      </div>`;
+      sidebar.innerHTML += renderTemplate('tpl-more-posts', {
+        authorName: post.authorName,
+        posts:      more.documents.map(p => ({ id: p.$id, title: p.title })),
+      });
     }
-  } catch {}
-
-  sidebar.innerHTML = authorHtml + morePosts;
-
-  // Attach follow button listener after HTML is in the DOM
-  const followBtn = document.getElementById('follow-btn');
-  if (followBtn) {
-    followBtn.addEventListener('click', () => {
-      const targetId = followBtn.dataset.targetId;
-      toggleFollow(targetId, followBtn);
-    });
-  }
+  } catch { /* sidebar still shows author widget */ }
+}
 
 async function isFollowing(targetId) {
   if (!currentUser) return false;
@@ -101,9 +87,8 @@ async function toggleFollow(targetId, btn) {
   if (!currentUser) { window.location.href = 'signin.html'; return; }
   btn.disabled = true;
   try {
-    const following = btn.textContent.trim() === 'Unfollow';
-    if (following) {
-      // Find and delete follow document
+    const isUnfollowing = btn.textContent.trim() === 'Unfollow';
+    if (isUnfollowing) {
       const res = await databases.listDocuments(APPWRITE_DB_ID, COL_FOLLOWS, [
         Query.equal('followerId', currentUser.$id),
         Query.equal('followingId', targetId),

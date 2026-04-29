@@ -29,24 +29,58 @@
 </div>
 
 <!-- ── Handlebars templates ─────────────────────────────────── -->
+
+<!-- Profile header: avatar, stats, follow / edit button -->
+<script id="tpl-profile-header" type="text/x-handlebars-template">
+  <div class="profile-header">
+    <div class="avatar">{{initial username}}</div>
+    <div class="profile-info">
+      <h2>{{username}}</h2>
+      {{#if bio}}<p class="bio">{{bio}}</p>{{/if}}
+      <div class="profile-stats">
+        <span><strong>{{followers}}</strong> followers</span>
+        <span><strong>{{following}}</strong> following</span>
+        <span><strong>{{posts}}</strong> posts</span>
+      </div>
+      <div style="margin-top:10px;">
+        {{#if isOwn}}
+          <a href="settings.html" class="btn btn-secondary btn-sm">Edit Profile</a>
+        {{else if showFollow}}
+          <button id="follow-btn"
+            class="btn {{#if isFollowing}}btn-secondary{{else}}btn-primary{{/if}} btn-sm"
+            data-target-id="{{profileId}}">
+            {{#if isFollowing}}Unfollow{{else}}Follow{{/if}}
+          </button>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+  <h3 class="section-heading">Posts</h3>
+  <div id="user-posts"><div class="loading">Loading posts…</div></div>
+</script>
+
+<!-- Post card used for the list of posts on this profile -->
 <script id="tpl-post-card" type="text/x-handlebars-template">
   <div class="post-card">
     <a href="post.html?id={{id}}" class="post-card-title">{{title}}</a>
     <div class="post-meta">
       by <a href="profile.html?id={{authorId}}" class="author-link">{{authorName}}</a>
-      · {{timeAgo}}
+      · {{timeAgo createdAt}}
     </div>
-    <p class="post-excerpt">{{excerpt}}</p>
-    <div>{{#each tags}}<a href="search.html?tag={{this}}" class="tag">#{{this}}</a>{{/each}}</div>
+    <p class="post-excerpt">{{excerpt content}}</p>
+    <div>
+      {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
+    </div>
   </div>
 </script>
 
+<!-- ── Scripts ─────────────────────────────────────────────── -->
 <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/appwrite@16/dist/iife/sdk.js"></script>
 <script src="js/config.js"></script>
 <script src="js/appwrite.js"></script>
-<script src="js/auth.js"></script>
 <script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/pages/profile.js"></script>
 
 </body>

@@ -1,5 +1,6 @@
 /**
  * profile.js – user profile page.
+ * All HTML is rendered by Handlebars templates defined in profile.html.
  */
 let currentUser = null;
 
@@ -18,11 +19,9 @@ async function initProfile() {
     try {
       profile = await databases.getDocument(APPWRITE_DB_ID, COL_USERS, profileId);
     } catch {
-      // Profile doc might not exist; fall back to minimal info from posts
       profile = { userId: profileId, username: 'Unknown', bio: '' };
     }
 
-    // Count followers / following / posts
     const [followersRes, followingRes, postsRes] = await Promise.all([
       databases.listDocuments(APPWRITE_DB_ID, COL_FOLLOWS, [
         Query.equal('followingId', profileId), Query.limit(1),
@@ -35,46 +34,25 @@ async function initProfile() {
       ]),
     ]);
 
-    const initial = (profile.username || '?')[0].toUpperCase();
-    const isOwn   = currentUser && currentUser.$id === profileId;
+    const isOwn      = !!(currentUser && currentUser.$id === profileId);
+    const showFollow = !!(currentUser && !isOwn);
+    const isFollowing = showFollow ? await isFollowingUser(profileId) : false;
 
-    let followBtn = '';
-    if (currentUser && !isOwn) {
-      const following = await isFollowingUser(profileId);
-      followBtn = `<button id="follow-btn"
-        class="btn ${following ? 'btn-secondary' : 'btn-primary'} btn-sm"
-        data-target-id="${escapeHtml(profileId)}">
-        ${following ? 'Unfollow' : 'Follow'}
-      </button>`;
-    }
+    container.innerHTML = renderTemplate('tpl-profile-header', {
+      profileId,
+      username:    profile.username,
+      bio:         profile.bio || '',
+      followers:   followersRes.total,
+      following:   followingRes.total,
+      posts:       postsRes.total,
+      isOwn,
+      showFollow,
+      isFollowing,
+    });
 
-    container.innerHTML = `
-      <div class="profile-header">
-        <div class="avatar">${escapeHtml(initial)}</div>
-        <div class="profile-info">
-          <h2>${escapeHtml(profile.username)}</h2>
-          ${profile.bio ? `<p class="bio">${escapeHtml(profile.bio)}</p>` : ''}
-          <div class="profile-stats">
-            <span><strong>${followersRes.total}</strong> followers</span>
-            <span><strong>${followingRes.total}</strong> following</span>
-            <span><strong>${postsRes.total}</strong> posts</span>
-          </div>
-          <div style="margin-top:10px;">
-            ${isOwn ? '<a href="settings.html" class="btn btn-secondary btn-sm">Edit Profile</a>' : followBtn}
-          </div>
-        </div>
-      </div>
-      <h3 class="section-heading">Posts</h3>
-      <div id="user-posts"><div class="loading">Loading posts…</div></div>
-    `;
-
-    // Attach follow button listener after HTML is in the DOM
     const btn = document.getElementById('follow-btn');
     if (btn) {
-      btn.addEventListener('click', () => {
-        const targetId = btn.dataset.targetId;
-        toggleFollow(targetId, btn);
-      });
+      btn.addEventListener('click', () => toggleFollow(profileId, btn));
     }
 
     loadUserPosts(profileId);
@@ -105,9 +83,9 @@ async function loadUserPosts(profileId) {
         title:      post.title,
         authorId:   post.authorId,
         authorName: post.authorName,
-        excerpt:    excerpt(post.content),
-        tags:       (post.tags || []),
-        timeAgo:    timeAgo(post.$createdAt),
+        content:    post.content,
+        tags:       post.tags || [],
+        createdAt:  post.$createdAt,
       }))
       .join('');
   } catch (err) {
@@ -131,9 +109,9 @@ async function isFollowingUser(targetId) {
 async function toggleFollow(targetId, btn) {
   if (!currentUser) { window.location.href = 'signin.html'; return; }
   btn.disabled = true;
-  const following = btn.textContent.trim() === 'Unfollow';
+  const isUnfollowing = btn.textContent.trim() === 'Unfollow';
   try {
-    if (following) {
+    if (isUnfollowing) {
       const res = await databases.listDocuments(APPWRITE_DB_ID, COL_FOLLOWS, [
         Query.equal('followerId', currentUser.$id),
         Query.equal('followingId', targetId),

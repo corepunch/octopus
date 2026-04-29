@@ -62,6 +62,7 @@ async function ensureProfile(user) {
 
 /**
  * Render the navigation bar depending on auth state.
+ * Uses Handlebars.compile() so all values are automatically escaped.
  */
 async function renderNav() {
   const user = await getCurrentUser();
@@ -69,22 +70,22 @@ async function renderNav() {
   if (!linksEl) return;
 
   if (user) {
-    linksEl.innerHTML = `
-      <span id="nav-user-name">${escapeHtml(user.name)}</span>
-      <a href="create.html" class="btn-nav-primary btn">+ New Post</a>
-      <a href="profile.html?id=${escapeHtml(user.$id)}">Profile</a>
-      <a href="#" id="nav-sign-out">Sign Out</a>
-    `;
+    linksEl.innerHTML = Handlebars.compile(
+      '<span id="nav-user-name">{{name}}</span>' +
+      '<a href="create.html" class="btn-nav-primary btn">+ New Post</a>' +
+      '<a href="profile.html?id={{id}}">Profile</a>' +
+      '<a href="#" id="nav-sign-out">Sign Out</a>'
+    )({ name: user.name, id: user.$id });
+
     document.getElementById('nav-sign-out').addEventListener('click', e => {
       e.preventDefault();
       logout();
     });
   } else {
-    linksEl.innerHTML = `
-      <a href="search.html">Search</a>
-      <a href="signin.html">Sign In</a>
-      <a href="signup.html" class="btn-nav-primary btn">Sign Up</a>
-    `;
+    linksEl.innerHTML =
+      '<a href="search.html">Search</a>' +
+      '<a href="signin.html">Sign In</a>' +
+      '<a href="signup.html" class="btn-nav-primary btn">Sign Up</a>';
   }
 }
 

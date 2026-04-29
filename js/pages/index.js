@@ -1,5 +1,6 @@
 /**
  * index.js – main feed page logic.
+ * All HTML is rendered by Handlebars templates defined in index.html.
  */
 let currentUser = null;
 let activeTab   = 'discover';
@@ -9,7 +10,7 @@ async function initFeed() {
   currentUser = await getCurrentUser();
   renderSidebarUser();
 
-  // Wire up feed tab buttons via event delegation (no inline onclick)
+  // Wire up feed tab buttons via data attributes + addEventListener
   document.querySelectorAll('.feed-tab').forEach(btn => {
     btn.addEventListener('click', () => loadPosts(btn.dataset.tab));
   });
@@ -25,7 +26,6 @@ function renderSidebarUser() {
       name: currentUser.name,
       id:   currentUser.$id,
     });
-    // Attach sign-out listener after template is in the DOM
     const signOutBtn = document.getElementById('sidebar-sign-out');
     if (signOutBtn) {
       signOutBtn.addEventListener('click', () => logout());
@@ -45,15 +45,13 @@ async function loadPosts(tab) {
   try {
     let docs;
     if (tab === 'following' && currentUser) {
-      // Fetch IDs of users the current user follows
       const follows = await databases.listDocuments(APPWRITE_DB_ID, COL_FOLLOWS, [
         Query.equal('followerId', currentUser.$id),
         Query.limit(50),
       ]);
       const ids = follows.documents.map(f => f.followingId);
       if (ids.length === 0) {
-        container.innerHTML = `<div class="empty-state"><p>You're not following anyone yet.</p>
-          <a href="search.html" class="btn btn-primary" style="margin-top:12px;display:inline-block;">Find people to follow</a></div>`;
+        container.innerHTML = renderTemplate('tpl-no-following', {});
         return;
       }
       docs = await databases.listDocuments(APPWRITE_DB_ID, COL_POSTS, [
@@ -62,7 +60,6 @@ async function loadPosts(tab) {
         Query.limit(30),
       ]);
     } else {
-      // Discover – all recent posts
       docs = await databases.listDocuments(APPWRITE_DB_ID, COL_POSTS, [
         Query.orderDesc('$createdAt'),
         Query.limit(30),
@@ -70,7 +67,7 @@ async function loadPosts(tab) {
     }
 
     if (docs.documents.length === 0) {
-      container.innerHTML = '<div class="empty-state"><p>No posts yet. Be the first!</p></div>';
+      container.innerHTML = renderTemplate('tpl-empty-feed', {});
       return;
     }
 
@@ -80,13 +77,13 @@ async function loadPosts(tab) {
         title:      post.title,
         authorId:   post.authorId,
         authorName: post.authorName,
-        excerpt:    excerpt(post.content),
-        tags:       (post.tags || []),
-        timeAgo:    timeAgo(post.$createdAt),
+        content:    post.content,
+        tags:       post.tags || [],
+        createdAt:  post.$createdAt,
       }))
       .join('');
   } catch (e) {
-    container.innerHTML = `<div class="empty-state"><p>Could not load posts. Check your Appwrite config.</p></div>`;
+    container.innerHTML = '<div class="empty-state"><p>Could not load posts. Check your Appwrite config.</p></div>';
     console.error(e);
   }
 }
