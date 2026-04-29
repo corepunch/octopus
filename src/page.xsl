@@ -43,11 +43,24 @@
       <body>
 
         <nav id="nav">
-          <a class="nav-logo" href="index.html">🐙 Octopus</a>
-          <div class="nav-links" id="nav-links"></div>
+          <div class="nav-inner">
+            <div class="nav-1">
+              <a class="nav-logo" href="index.html">🐙 Octopus</a>
+            </div>
+            <div class="nav-2" id="nav-center">
+              <xsl:for-each select="nav-center/node()">
+                <xsl:copy-of select="."/>
+              </xsl:for-each>
+            </div>
+            <div class="nav-3">
+              <div class="nav-links" id="nav-links"></div>
+            </div>
+          </div>
         </nav>
 
-        <xsl:copy-of select="node()"/>
+        <xsl:for-each select="node()[not(self::nav-center)]">
+          <xsl:copy-of select="."/>
+        </xsl:for-each>
 
         <!-- Required CDN scripts in fixed order -->
         <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.8/dist/handlebars.min.js"></script>

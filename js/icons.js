@@ -13,6 +13,7 @@
  *
  * Icon catalogue
  * ──────────────
+ * home           Home / Feed
  * pen-line       Write / New Post
  * user           Profile
  * log-out        Sign Out
@@ -40,6 +41,10 @@ const ICONS = (function () {
   }
 
   return {
+    'home': svg(
+      '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>' +
+      '<polyline points="9 22 9 12 15 12 15 22"/>'
+    ),
     'pen-line': svg(
       '<path d="M12 20h9"/>' +
       '<path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/>' +

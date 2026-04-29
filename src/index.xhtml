@@ -1,46 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <page title="Octopus – Blog Feed" name="index" markdown="true">
 
-    <div class="page-wrap">
+  <nav-center>
+    <div class="feed-tabs">
+      <button class="feed-tab active" data-tab="discover">Discover</button>
+      <button class="feed-tab"        data-tab="following">Following</button>
+    </div>
+  </nav-center>
 
-      <!-- Feed -->
-      <div class="main-col">
-        <div class="feed-tabs">
-          <button class="feed-tab active" data-tab="discover">Discover</button>
-          <button class="feed-tab"        data-tab="following">Following</button>
-        </div>
-        <div id="posts"><div class="loading">Loading posts…</div></div>
+  <div class="page-wrap">
+
+    <!-- Left navigation column (populated by auth.js) -->
+    <nav class="left-nav" id="left-nav"></nav>
+
+    <!-- Feed -->
+    <div class="main-col">
+      <div id="posts"><div class="loading">Loading posts…</div></div>
+    </div>
+
+    <!-- Right column -->
+    <aside class="right-col">
+      <div class="widget">
+        <form action="search.html" method="GET" style="display:flex;gap:6px;">
+          <input class="form-control" name="q" placeholder="Search posts, people, #tags…" style="flex:1;font-size:13px;"/>
+          <button type="submit" class="btn btn-primary btn-sm" data-icon="search">Go</button>
+        </form>
       </div>
 
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div id="sidebar-user"></div>
+      <div id="sidebar-user"></div>
 
-        <div class="widget">
-          <h3>About</h3>
-          <p style="font-size:13px;color:#666;line-height:1.5;">
-            Octopus is an open markdown blog. Write, share, and follow writers who inspire you.
-          </p>
+      <div class="widget">
+        <h3>About</h3>
+        <p style="font-size:13px;color:#666;line-height:1.5;">
+          Octopus is an open markdown blog. Write, share, and follow writers who inspire you.
+        </p>
+      </div>
+
+      <div class="widget">
+        <div class="widget-footer-links">
+          <a href="about.html">About</a>
+          <a href="terms.html">Terms</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="impressum.html">Impressum</a>
         </div>
+      </div>
+    </aside>
 
-        <div class="widget">
-          <h3>Search</h3>
-          <form action="search.html" method="GET" style="display:flex;gap:6px;">
-            <input class="form-control" name="q" placeholder="Posts, people, #tags…" style="flex:1;font-size:13px;"/>
-            <button type="submit" class="btn btn-primary btn-sm" data-icon="search">Go</button>
-          </form>
-        </div>
-
-        <div class="widget">
-          <div class="widget-footer-links">
-            <a href="about.html">About</a>
-            <a href="terms.html">Terms</a>
-            <a href="privacy.html">Privacy</a>
-            <a href="impressum.html">Impressum</a>
-          </div>
-        </div>
-      </aside>
-
-    </div>
+  </div>
 
 </page>
