@@ -2,7 +2,7 @@
 <!--
   src/page.xsl – XSLT template for all Octopus pages.
 
-  Each page is defined as a small XML file (src/<name>.xml) that supplies
+  Each page is defined as a small XHTML file (src/<name>.xhtml) that supplies
   only the unique body content and a few attributes:
 
     <page title="…"   – <title> text
@@ -11,7 +11,7 @@
       <body>…page-specific HTML…</body>
     </page>
 
-  The build script (scripts/build.sh) transforms every src/*.xml file into
+  The build script (scripts/build.sh) transforms every src/*.xhtml file into
   a root-level *.html file using xsltproc.
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
