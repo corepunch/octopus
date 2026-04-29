@@ -110,7 +110,7 @@ a:hover { text-decoration: underline; }
 
 /* Column 1: logo */
 .nav-1 {
-  width: 220px;
+  width: 180px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -173,13 +173,13 @@ a:hover { text-decoration: underline; }
   margin: 0 auto;
   padding: 0 16px;
   display: grid;
-  grid-template-columns: 220px 1fr 280px;
+  grid-template-columns: 180px 1fr 280px;
   align-items: start;
 }
 
 /* ── Left navigation column ──────────────────────────────── */
 .left-nav {
-  width: 220px;
+  width: 180px;
   padding: 16px 0 40px;
   position: sticky;
   top: 44px;
@@ -615,10 +615,10 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 960px) {
-  .page-wrap { grid-template-columns: 200px 1fr 0; }
+  .page-wrap { grid-template-columns: 170px 1fr 0; }
   .right-col { display: none; }
   .nav-3 { width: 200px; }
-  .nav-1 { width: 200px; }
+  .nav-1 { width: 170px; }
 }
 @media (max-width: 720px) {
   .page-wrap { grid-template-columns: 1fr; }
