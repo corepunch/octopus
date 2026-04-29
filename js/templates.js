@@ -26,6 +26,10 @@
   <div>
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
+  <div class="post-actions">
+    <a href="post.html?id={{id}}" class="action-btn">{{icon "message-circle"}} Comment</a>
+    <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+  </div>
 </div>`;
 
   /** Sidebar widget – signed-in state. */
@@ -34,9 +38,9 @@
   <h3>You</h3>
   <div class="widget-user-name"><a href="profile.html?id={{urlEncode id}}">{{name}}</a></div>
   <div class="widget-actions">
-    <a href="create.html" class="btn btn-primary btn-sm">+ New Post</a>
-    <a href="profile.html?id={{urlEncode id}}" class="btn btn-secondary btn-sm">Profile</a>
-    <button class="btn btn-danger btn-sm" id="sidebar-sign-out">Sign Out</button>
+    <a href="create.html" class="btn btn-primary btn-sm">{{icon "pen-line"}} New Post</a>
+    <a href="profile.html?id={{urlEncode id}}" class="btn btn-secondary btn-sm">{{icon "user"}} Profile</a>
+    <button class="btn btn-danger btn-sm" id="sidebar-sign-out">{{icon "log-out"}} Sign Out</button>
   </div>
 </div>`;
 
@@ -46,8 +50,8 @@
   <h3>Join Octopus</h3>
   <p style="font-size:13px;color:#666;margin-bottom:10px;">Follow writers and get personalised posts.</p>
   <div style="display:flex;gap:6px;">
-    <a href="signin.html" class="btn btn-secondary btn-sm">Sign In</a>
-    <a href="signup.html" class="btn btn-primary btn-sm">Sign Up</a>
+    <a href="signin.html" class="btn btn-secondary btn-sm">{{icon "log-in"}} Sign In</a>
+    <a href="signup.html" class="btn btn-primary btn-sm">{{icon "user-plus"}} Sign Up</a>
   </div>
 </div>`;
 
@@ -56,7 +60,7 @@
   const noFollowing = `
 <div class="empty-state">
   <p>You're not following anyone yet.</p>
-  <a href="search.html" class="btn btn-primary" style="margin-top:12px;display:inline-block;">Find people to follow</a>
+  <a href="search.html" class="btn btn-primary" style="margin-top:12px;">{{icon "users"}} Find people to follow</a>
 </div>`;
 
   const emptyFeed = `
@@ -65,7 +69,7 @@
   const signInPrompt = `
 <div class="empty-state">
   <p>Sign in to see posts from writers you follow.</p>
-  <a href="signin.html" class="btn btn-primary" style="margin-top:12px;display:inline-block;">Sign In</a>
+  <a href="signin.html" class="btn btn-primary" style="margin-top:12px;">{{icon "log-in"}} Sign In</a>
 </div>`;
 
   // ── post.html ─────────────────────────────────────────────────────────────
@@ -77,6 +81,10 @@
   By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
   · {{timeAgo createdAt}}
   {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
+</div>
+<div class="post-actions" style="margin-bottom:20px;">
+  <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+  <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
 </div>
 <div class="markdown-body">{{markdown content}}</div>`;
 
@@ -90,7 +98,7 @@
     <button id="follow-btn"
       class="btn {{#if following}}btn-secondary{{else}}btn-primary{{/if}} btn-sm"
       data-target-id="{{authorId}}">
-      {{#if following}}Unfollow{{else}}Follow{{/if}}
+      {{#if following}}{{icon "user-minus"}} Unfollow{{else}}{{icon "user-plus"}} Follow{{/if}}
     </button>
   </div>
   {{/if}}
@@ -123,12 +131,12 @@
     </div>
     <div style="margin-top:10px;">
       {{#if isOwn}}
-        <a href="settings.html" class="btn btn-secondary btn-sm">Edit Profile</a>
+        <a href="settings.html" class="btn btn-secondary btn-sm">{{icon "settings"}} Edit Profile</a>
       {{else if showFollow}}
         <button id="follow-btn"
           class="btn {{#if isFollowing}}btn-secondary{{else}}btn-primary{{/if}} btn-sm"
           data-target-id="{{profileId}}">
-          {{#if isFollowing}}Unfollow{{else}}Follow{{/if}}
+          {{#if isFollowing}}{{icon "user-minus"}} Unfollow{{else}}{{icon "user-plus"}} Follow{{/if}}
         </button>
       {{/if}}
     </div>
@@ -161,9 +169,9 @@
   /** Signed-in navigation links. */
   const navAuth = `
 <span id="nav-user-name">{{name}}</span>
-<a href="create.html" class="btn-nav-primary btn">+ New Post</a>
-<a href="profile.html?id={{urlEncode id}}">Profile</a>
-<a href="#" id="nav-sign-out">Sign Out</a>`;
+<a href="create.html" class="btn-nav-primary btn">{{icon "pen-line"}} New Post</a>
+<a href="profile.html?id={{urlEncode id}}">{{icon "user"}} Profile</a>
+<a href="#" id="nav-sign-out">{{icon "log-out"}} Sign Out</a>`;
 
   // ── Register all templates as Handlebars partials ─────────────────────────
   const defs = {

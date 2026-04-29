@@ -109,7 +109,7 @@ async function isFollowingUser(targetId) {
 async function toggleFollow(targetId, btn) {
   if (!currentUser) { window.location.href = 'signin.html'; return; }
   btn.disabled = true;
-  const isUnfollowing = btn.textContent.trim() === 'Unfollow';
+  const isUnfollowing = btn.textContent.trim().startsWith('Unfollow');
   try {
     if (isUnfollowing) {
       const res = await databases.listDocuments(APPWRITE_DB_ID, COL_FOLLOWS, [
@@ -120,14 +120,14 @@ async function toggleFollow(targetId, btn) {
       if (res.documents.length > 0) {
         await databases.deleteDocument(APPWRITE_DB_ID, COL_FOLLOWS, res.documents[0].$id);
       }
-      btn.textContent = 'Follow';
+      btn.innerHTML = iconLabel('user-plus', 'Follow');
       btn.className   = 'btn btn-primary btn-sm';
     } else {
       await databases.createDocument(APPWRITE_DB_ID, COL_FOLLOWS, ID.unique(), {
         followerId:  currentUser.$id,
         followingId: targetId,
       });
-      btn.textContent = 'Unfollow';
+      btn.innerHTML = iconLabel('user-minus', 'Unfollow');
       btn.className   = 'btn btn-secondary btn-sm';
     }
   } catch (err) {

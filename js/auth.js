@@ -85,9 +85,9 @@ async function renderNav() {
     });
   } else {
     linksEl.innerHTML =
-      '<a href="search.html">Search</a>' +
-      '<a href="signin.html">Sign In</a>' +
-      '<a href="signup.html" class="btn-nav-primary btn">Sign Up</a>';
+      '<a href="search.html">'                                      + iconLabel('search',    'Search')   + '</a>' +
+      '<a href="signin.html">'                                      + iconLabel('log-in',    'Sign In')  + '</a>' +
+      '<a href="signup.html" class="btn-nav-primary btn">'          + iconLabel('user-plus', 'Sign Up')  + '</a>';
   }
 }
 
