@@ -17,7 +17,18 @@ async function initPost() {
   try {
     const post = await databases.getDocument(APPWRITE_DB_ID, COL_POSTS, postId);
 
-    document.title = `${post.title} – Octopus`;
+    const postType = post.postType || 'text';
+    let pageTitle;
+    if (postType === 'text') {
+      pageTitle = post.title || 'Post';
+    } else if (postType === 'quote') {
+      pageTitle = (post.content || '').slice(0, 60) + ((post.content || '').length > 60 ? '…' : '');
+    } else if (postType === 'link') {
+      try { pageTitle = new URL(post.linkUrl).hostname; } catch { pageTitle = post.linkUrl || 'Link'; }
+    } else {
+      pageTitle = 'Photo';
+    }
+    document.title = `${pageTitle} – Octopus`;
 
     container.innerHTML = renderTemplate('post-header', {
       id:          post.$id,
@@ -27,10 +38,11 @@ async function initPost() {
       createdAt:   post.$createdAt,
       content:     post.content,
       tags:        post.tags || [],
-      postType:    post.postType || 'text',
+      postType,
       imageUrl:    post.imageId ? getImageUrl(post.imageId) : '',
       linkUrl:     post.linkUrl || '',
       quoteSource: post.quoteSource || '',
+      userText:    post.userText || '',
     });
 
     renderPostSidebar(post);
@@ -70,7 +82,7 @@ async function renderPostSidebar(post) {
     if (more.documents.length > 0) {
       sidebar.innerHTML += renderTemplate('more-posts', {
         authorName: post.authorName,
-        posts:      more.documents.map(p => ({ id: p.$id, title: p.title })),
+        posts:      more.documents.map(p => ({ id: p.$id, label: postLabel(p) })),
       });
     }
   } catch { /* sidebar still shows author widget */ }
@@ -120,3 +132,22 @@ async function toggleFollow(targetId, btn) {
 }
 
 document.addEventListener('DOMContentLoaded', initPost);
+
+/**
+ * Compute a short display label for a post, used in "More from X" sidebar.
+ * Text posts use their title; other types derive a label from their content.
+ * @param {object} p – Appwrite post document
+ * @returns {string}
+ */
+function postLabel(p) {
+  const type = p.postType || 'text';
+  if (type === 'text') return p.title || 'Untitled';
+  if (type === 'quote') {
+    const q = p.content || '';
+    return q.length > 60 ? q.slice(0, 60) + '…' : q;
+  }
+  if (type === 'link') {
+    try { return new URL(p.linkUrl).hostname; } catch { return p.linkUrl || 'Link'; }
+  }
+  return 'Photo';
+}

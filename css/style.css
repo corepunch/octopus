@@ -756,6 +756,12 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 /* ── Post card: quote ────────────────────────────────────── */
 .post-card-quote-link { display: block; text-decoration: none; }
 .post-card-quote-link:hover { text-decoration: none; }
+.post-card-user-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text);
+  margin: 0 0 8px;
+}
 .post-card-quote {
   font-size: 18px;
   font-style: italic;

@@ -18,18 +18,17 @@
   const postCard = `
 <div class="post-card post-card--{{postType}}">
   {{#if (eq postType "photo")}}
-    {{#if imageUrl}}<a href="post.html?id={{id}}" class="post-card-image-wrap"><img class="post-card-image" src="{{imageUrl}}" alt="{{title}}" loading="lazy"/></a>{{/if}}
+    {{#if imageUrl}}<a href="post.html?id={{id}}" class="post-card-image-wrap"><img class="post-card-image" src="{{imageUrl}}" alt="" loading="lazy"/></a>{{/if}}
     <div class="post-card-body">
       <div class="post-meta">
         by <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
         · {{timeAgo createdAt}}
       </div>
-      {{#if title}}<a href="post.html?id={{id}}" class="post-card-title">{{title}}</a>{{/if}}
       {{#if content}}<p class="post-excerpt">{{excerpt content}}</p>{{/if}}
       <div>{{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}</div>
       <div class="post-actions">
         <a href="post.html?id={{id}}" class="action-btn">{{icon "message-circle"}} Comment</a>
-        <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+        <button class="action-btn" data-share-id="{{id}}" data-share-title="">{{icon "share-2"}} Share</button>
       </div>
     </div>
   {{else if (eq postType "quote")}}
@@ -38,6 +37,7 @@
         by <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
         · {{timeAgo createdAt}}
       </div>
+      {{#if userText}}<p class="post-card-user-text">{{userText}}</p>{{/if}}
       <a href="post.html?id={{id}}" class="post-card-quote-link">
         <blockquote class="post-card-quote">{{content}}</blockquote>
         {{#if quoteSource}}<cite class="post-card-quote-source">— {{quoteSource}}</cite>{{/if}}
@@ -45,7 +45,7 @@
       <div style="margin-top:6px;">{{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}</div>
       <div class="post-actions">
         <a href="post.html?id={{id}}" class="action-btn">{{icon "message-circle"}} Comment</a>
-        <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+        <button class="action-btn" data-share-id="{{id}}" data-share-title="{{excerpt content}}">{{icon "share-2"}} Share</button>
       </div>
     </div>
   {{else if (eq postType "link")}}
@@ -54,13 +54,12 @@
         by <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
         · {{timeAgo createdAt}}
       </div>
-      <a href="post.html?id={{id}}" class="post-card-title">{{title}}</a>
       {{#if linkUrl}}<a href="{{safeUrl linkUrl}}" class="post-card-link-url" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{linkUrl}}</a>{{/if}}
       {{#if content}}<p class="post-excerpt">{{excerpt content}}</p>{{/if}}
       <div>{{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}</div>
       <div class="post-actions">
         <a href="post.html?id={{id}}" class="action-btn">{{icon "message-circle"}} Comment</a>
-        <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+        <button class="action-btn" data-share-id="{{id}}" data-share-title="{{linkUrl}}">{{icon "share-2"}} Share</button>
       </div>
     </div>
   {{else}}
@@ -127,14 +126,14 @@
   /** Post title, meta and rendered body (type-aware). */
   const postHeader = `
 {{#if (eq postType "photo")}}
-  {{#if imageUrl}}<img class="post-page-image" src="{{imageUrl}}" alt="{{title}}"/>{{/if}}
+  {{#if imageUrl}}<img class="post-page-image" src="{{imageUrl}}" alt=""/>{{/if}}
   <div class="post-page-meta" style="margin-top:16px;">
     By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
     · {{timeAgo createdAt}}
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
   <div class="post-actions" style="margin-bottom:20px;">
-    <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+    <button class="action-btn" data-share-id="{{id}}" data-share-title="">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
   {{#if content}}<div class="markdown-body">{{markdown content}}</div>{{/if}}
@@ -145,20 +144,20 @@
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
   <div class="post-actions" style="margin-bottom:20px;">
-    <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+    <button class="action-btn" data-share-id="{{id}}" data-share-title="{{excerpt content}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
   <blockquote class="post-page-quote">{{content}}</blockquote>
   {{#if quoteSource}}<cite class="post-page-quote-source">— {{quoteSource}}</cite>{{/if}}
+  {{#if userText}}<div class="post-page-user-text markdown-body" style="margin-top:16px;">{{markdown userText}}</div>{{/if}}
 {{else if (eq postType "link")}}
-  <h1 class="post-page-title">{{title}}</h1>
   <div class="post-page-meta">
     By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
     · {{timeAgo createdAt}}
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
   <div class="post-actions" style="margin-bottom:20px;">
-    <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
+    <button class="action-btn" data-share-id="{{id}}" data-share-title="{{linkUrl}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
   {{#if linkUrl}}<a href="{{safeUrl linkUrl}}" class="post-page-link-card" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{linkUrl}}</a>{{/if}}
@@ -199,7 +198,7 @@
   <h3>More from {{authorName}}</h3>
   {{#each posts}}
   <div style="margin-bottom:8px;">
-    <a href="post.html?id={{urlEncode id}}">{{title}}</a>
+    <a href="post.html?id={{urlEncode id}}">{{label}}</a>
   </div>
   {{/each}}
 </div>`;

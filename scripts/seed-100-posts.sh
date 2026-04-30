@@ -117,49 +117,49 @@ create_text_post() {
 }
 
 create_quote_post() {
-  local uid="$1" uname="$2" title="$3" content="$4" source="$5" tags_json="$6"
+  local uid="$1" uname="$2" content="$3" source="$4" user_text="$5" tags_json="$6"
   local body; body=$(printf '%b' "$content")
+  local utext; utext=$(printf '%b' "$user_text")
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid    "$uid"     \
     --arg uname  "$uname"   \
-    --arg title  "$title"   \
     --arg body   "$body"    \
     --arg src    "$source"  \
+    --arg utext  "$utext"   \
     --argjson tags "$tags_json" \
-    '{documentId:"unique()",data:{title:$title,content:$body,postType:"quote",
-      quoteSource:$src,authorId:$uid,authorName:$uname,tags:$tags,published:true},
-      permissions:["read(\"any\")"]}')" >/dev/null && info "  quote: $title"
+    '{documentId:"unique()",data:{content:$body,postType:"quote",
+      quoteSource:$src,userText:(if $utext == "" then null else $utext end),
+      authorId:$uid,authorName:$uname,tags:$tags,published:true},
+      permissions:["read(\"any\")"]}')" >/dev/null && info "  quote: $(echo "$content" | head -c 60)"
 }
 
 create_link_post() {
-  local uid="$1" uname="$2" title="$3" content="$4" url="$5" tags_json="$6"
+  local uid="$1" uname="$2" content="$3" url="$4" tags_json="$5"
   local body; body=$(printf '%b' "$content")
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid    "$uid"     \
     --arg uname  "$uname"   \
-    --arg title  "$title"   \
     --arg body   "$body"    \
     --arg lurl   "$url"     \
     --argjson tags "$tags_json" \
-    '{documentId:"unique()",data:{title:$title,content:$body,postType:"link",
+    '{documentId:"unique()",data:{content:$body,postType:"link",
       linkUrl:$lurl,authorId:$uid,authorName:$uname,tags:$tags,published:true},
-      permissions:["read(\"any\")"]}')" >/dev/null && info "  link: $title"
+      permissions:["read(\"any\")"]}')" >/dev/null && info "  link: $url"
 }
 
 create_photo_post() {
-  local uid="$1" uname="$2" title="$3" content="$4" img_id="$5" tags_json="$6"
-  [[ -z "$img_id" ]] && { warn "  No image ID – skipping photo: $title"; return; }
+  local uid="$1" uname="$2" content="$3" img_id="$4" tags_json="$5"
+  [[ -z "$img_id" ]] && { warn "  No image ID – skipping photo post"; return; }
   local body; body=$(printf '%b' "$content")
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid    "$uid"     \
     --arg uname  "$uname"   \
-    --arg title  "$title"   \
     --arg body   "$body"    \
     --arg img    "$img_id"  \
     --argjson tags "$tags_json" \
-    '{documentId:"unique()",data:{title:$title,content:$body,postType:"photo",
+    '{documentId:"unique()",data:{content:$body,postType:"photo",
       imageId:$img,authorId:$uid,authorName:$uname,tags:$tags,published:true},
-      permissions:["read(\"any\")"]}')" >/dev/null && info "  photo: $title"
+      permissions:["read(\"any\")"]}')" >/dev/null && info "  photo: $(echo "$body" | head -c 60)"
 }
 
 # ── Optional reset ────────────────────────────────────────────────────────────
@@ -286,42 +286,43 @@ post_011() { create_text_post "$U1" "alice" \
   '["blogging","thinking","writing"]'; }
 
 post_012() { create_quote_post "$U1" "alice" \
-  "On simplicity" "Simplicity is the ultimate sophistication." \
-  "Leonardo da Vinci" '["design","quotes","simplicity"]'; }
+  "Simplicity is the ultimate sophistication." \
+  "Leonardo da Vinci" "The principle I keep returning to every time a design gets over-engineered." \
+  '["design","quotes","simplicity"]'; }
 
 post_013() { create_quote_post "$U1" "alice" \
-  "The first sentence" "Don't tell me the moon is shining; show me the glint of light on broken glass." \
-  "Anton Chekhov" '["writing","craft","quotes"]'; }
+  "Don't tell me the moon is shining; show me the glint of light on broken glass." \
+  "Anton Chekhov" "The best writing advice I have ever read. Specificity beats abstraction every time." \
+  '["writing","craft","quotes"]'; }
 
 post_014() { create_quote_post "$U1" "alice" \
-  "On revision" "The first draft of anything is shit." \
-  "Ernest Hemingway" '["writing","quotes","process"]'; }
+  "The first draft of anything is shit." \
+  "Ernest Hemingway" "Permission to write badly is the most liberating thing a writer can give themselves." \
+  '["writing","quotes","process"]'; }
 
 post_015() { create_quote_post "$U1" "alice" \
-  "Clarity" "If you can't explain it simply, you don't understand it well enough." \
-  "Albert Einstein" '["writing","clarity","quotes"]'; }
+  "If you can't explain it simply, you don't understand it well enough." \
+  "Albert Einstein" "" \
+  '["writing","clarity","quotes"]'; }
 
 post_016() { create_link_post "$U1" "alice" \
-  "The Markdown Guide" \
   "A free and open-source reference guide that explains how to use Markdown — from basics to advanced syntax." \
   "https://www.markdownguide.org" '["markdown","writing","reference"]'; }
 
 post_017() { create_link_post "$U1" "alice" \
-  "Paul Graham's Essays" \
   "One of the best collections of essays on startups, ideas, and how to think. Start with 'How to Write Usefully'." \
   "https://paulgraham.com/articles.html" '["writing","essays","reading"]'; }
 
 post_018() { create_link_post "$U1" "alice" \
-  "Hemingway App" \
   "Paste your writing here and it highlights adverbs, passive voice, and overly complex sentences. Brutally useful." \
   "https://hemingwayapp.com" '["writing","tools","editing"]'; }
 
 post_019() { create_photo_post "$U1" "alice" \
-  "Morning light" "Golden hour on a quiet trail. Some mornings the world just looks right." \
+  "Golden hour on a quiet trail. Some mornings the world just looks right." \
   "$IMG_ALICE1" '["photography","nature","morning"]'; }
 
 post_020() { create_photo_post "$U1" "alice" \
-  "Forest floor" "Detail work. The things you walk past without noticing are often the most interesting." \
+  "Detail work. The things you walk past without noticing are often the most interesting." \
   "$IMG_ALICE2" '["photography","nature","detail"]'; }
 
 # ── Bob (021–040) ─────────────────────────────────────────────────────────────
@@ -381,42 +382,43 @@ post_031() { create_text_post "$U2" "bob" \
   '["opensource","documentation","writing"]'; }
 
 post_032() { create_quote_post "$U2" "bob" \
-  "On complexity" "Any fool can write code that a computer can understand. Good programmers write code that humans can understand." \
-  "Martin Fowler" '["programming","quotes","craft"]'; }
+  "Any fool can write code that a computer can understand. Good programmers write code that humans can understand." \
+  "Martin Fowler" "Code review culture lives or dies by this standard." \
+  '["programming","quotes","craft"]'; }
 
 post_033() { create_quote_post "$U2" "bob" \
-  "Simplicity in design" "It seems that perfection is attained not when there is nothing more to add, but when there is nothing more to remove." \
-  "Antoine de Saint-Exupéry" '["design","engineering","quotes"]'; }
+  "It seems that perfection is attained not when there is nothing more to add, but when there is nothing more to remove." \
+  "Antoine de Saint-Exupéry" "This applies to code just as much as prose. Every unnecessary line is a liability." \
+  '["design","engineering","quotes"]'; }
 
 post_034() { create_quote_post "$U2" "bob" \
-  "On debugging" "Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it." \
-  "Brian W. Kernighan" '["programming","debugging","quotes"]'; }
+  "Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it." \
+  "Brian W. Kernighan" "" \
+  '["programming","debugging","quotes"]'; }
 
 post_035() { create_quote_post "$U2" "bob" \
-  "Unix philosophy" "Write programs that do one thing and do it well. Write programs to work together." \
-  "Doug McIlroy" '["unix","programming","quotes"]'; }
+  "Write programs that do one thing and do it well. Write programs to work together." \
+  "Doug McIlroy" "The Unix philosophy in two sentences. Still the most useful design constraint I know." \
+  '["unix","programming","quotes"]'; }
 
 post_036() { create_link_post "$U2" "bob" \
-  "Appwrite Docs" \
   "The official Appwrite documentation. Surprisingly readable — start with the Databases section if you are building a data-driven app." \
   "https://appwrite.io/docs" '["appwrite","docs","reference"]'; }
 
 post_037() { create_link_post "$U2" "bob" \
-  "The Architecture of Open Source Applications" \
   "Case studies of how large open-source projects are structured. Essential reading for anyone who wants to design software at scale." \
   "https://aosabook.org" '["architecture","programming","reading"]'; }
 
 post_038() { create_link_post "$U2" "bob" \
-  "Bash Reference Manual" \
   "The full GNU Bash reference. I return to this every time I need to remember the exact syntax for parameter expansion or process substitution." \
   "https://www.gnu.org/software/bash/manual/bash.html" '["bash","reference","linux"]'; }
 
 post_039() { create_photo_post "$U2" "bob" \
-  "City geometry" "Lines and angles everywhere. Urban spaces have a visual logic of their own." \
+  "Lines and angles everywhere. Urban spaces have a visual logic of their own." \
   "$IMG_BOB1" '["photography","city","architecture"]'; }
 
 post_040() { create_photo_post "$U2" "bob" \
-  "Workspace" "The physical environment shapes the quality of thought. This corner works." \
+  "The physical environment shapes the quality of thought. This corner works." \
   "$IMG_BOB2" '["photography","workspace","productivity"]'; }
 
 # ── Carol (041–060) ───────────────────────────────────────────────────────────
@@ -476,42 +478,43 @@ post_051() { create_text_post "$U3" "carol" \
   '["css","design","frontend"]'; }
 
 post_052() { create_quote_post "$U3" "carol" \
-  "Good design is invisible" "Good design, when done well, should be invisible. It is only when it is done poorly that we notice it." \
-  "Jony Ive" '["design","ux","quotes"]'; }
+  "Good design, when done well, should be invisible. It is only when it is done poorly that we notice it." \
+  "Jony Ive" "Every form field I design, I ask: will the user notice this? If yes, it probably needs work." \
+  '["design","ux","quotes"]'; }
 
 post_053() { create_quote_post "$U3" "carol" \
-  "On constraints" "The enemy of art is the absence of limitations." \
-  "Orson Welles" '["design","creativity","quotes"]'; }
+  "The enemy of art is the absence of limitations." \
+  "Orson Welles" "Constraints are not a burden. They are the reason anything gets finished." \
+  '["design","creativity","quotes"]'; }
 
 post_054() { create_quote_post "$U3" "carol" \
-  "Dieter Rams on design" "Good design is as little design as possible." \
-  "Dieter Rams" '["design","minimalism","quotes"]'; }
+  "Good design is as little design as possible." \
+  "Dieter Rams" "" \
+  '["design","minimalism","quotes"]'; }
 
 post_055() { create_quote_post "$U3" "carol" \
-  "On aesthetics" "Have nothing in your house that you do not know to be useful or believe to be beautiful." \
-  "William Morris" '["design","craft","quotes"]'; }
+  "Have nothing in your house that you do not know to be useful or believe to be beautiful." \
+  "William Morris" "Replace 'house' with 'interface' and you have a complete design philosophy." \
+  '["design","craft","quotes"]'; }
 
 post_056() { create_link_post "$U3" "carol" \
-  "Refactoring UI" \
   "Practical design advice from the makers of Tailwind CSS. Every tip is actionable and immediately applicable." \
   "https://www.refactoringui.com" '["design","ui","reference"]'; }
 
 post_057() { create_link_post "$U3" "carol" \
-  "WebAIM Contrast Checker" \
   "Paste your foreground and background colours to check WCAG contrast ratios instantly. Bookmark this." \
   "https://webaim.org/resources/contrastchecker/" '["accessibility","design","tools"]'; }
 
 post_058() { create_link_post "$U3" "carol" \
-  "CSS Tricks — A Complete Guide to Flexbox" \
   "The definitive visual reference for flexbox. I still consult it for the alignment properties." \
   "https://css-tricks.com/snippets/css/a-guide-to-flexbox/" '["css","layout","reference"]'; }
 
 post_059() { create_photo_post "$U3" "carol" \
-  "Texture study" "Close-up surfaces reveal a whole other world of colour and form." \
+  "Close-up surfaces reveal a whole other world of colour and form." \
   "$IMG_CAROL1" '["photography","texture","abstract"]'; }
 
 post_060() { create_photo_post "$U3" "carol" \
-  "Studio light" "The quality of light in a space determines its character entirely." \
+  "The quality of light in a space determines its character entirely." \
   "$IMG_CAROL2" '["photography","design","studio"]'; }
 
 # ── Dave (061–080) ────────────────────────────────────────────────────────────
@@ -571,42 +574,43 @@ post_071() { create_text_post "$U4" "dave" \
   '["epistemology","probability","thinking"]'; }
 
 post_072() { create_quote_post "$U4" "dave" \
-  "On models" "All models are wrong, but some are useful." \
-  "George E. P. Box" '["science","statistics","quotes"]'; }
+  "All models are wrong, but some are useful." \
+  "George E. P. Box" "The most important sentence in statistics. Humility is built into the practice." \
+  '["science","statistics","quotes"]'; }
 
 post_073() { create_quote_post "$U4" "dave" \
-  "Russell on thinking" "The whole problem with the world is that fools and fanatics are always so certain of themselves, and wiser people so full of doubts." \
-  "Bertrand Russell" '["philosophy","thinking","quotes"]'; }
+  "The whole problem with the world is that fools and fanatics are always so certain of themselves, and wiser people so full of doubts." \
+  "Bertrand Russell" "Calibration is a virtue. Certainty is almost always a warning sign." \
+  '["philosophy","thinking","quotes"]'; }
 
 post_074() { create_quote_post "$U4" "dave" \
-  "Feynman on knowing" "The first principle is that you must not fool yourself — and you are the easiest person to fool." \
-  "Richard Feynman" '["science","epistemology","quotes"]'; }
+  "The first principle is that you must not fool yourself — and you are the easiest person to fool." \
+  "Richard Feynman" "" \
+  '["science","epistemology","quotes"]'; }
 
 post_075() { create_quote_post "$U4" "dave" \
-  "Sagan on extraordinary claims" "Extraordinary claims require extraordinary evidence." \
-  "Carl Sagan" '["science","skepticism","quotes"]'; }
+  "Extraordinary claims require extraordinary evidence." \
+  "Carl Sagan" "Three words that could fix most of our public discourse if people actually applied them." \
+  '["science","skepticism","quotes"]'; }
 
 post_076() { create_link_post "$U4" "dave" \
-  "Complexity Explorables" \
   "Interactive simulations of complex systems: emergence, phase transitions, flocking, epidemics. The best way to build intuition for non-linear dynamics." \
   "https://www.complexity-explorables.org" '["science","complexity","interactive"]'; }
 
 post_077() { create_link_post "$U4" "dave" \
-  "Our World in Data" \
   "Carefully sourced data visualisations on global development, health, and environment. The antidote to anecdotal worldviews." \
   "https://ourworldindata.org" '["data","science","reference"]'; }
 
 post_078() { create_link_post "$U4" "dave" \
-  "3Blue1Brown — YouTube" \
   "Mathematical animations that build deep intuition from first principles. 'Essence of Linear Algebra' is the best introduction to the subject I have found anywhere." \
   "https://www.youtube.com/@3blue1brown" '["math","education","video"]'; }
 
 post_079() { create_photo_post "$U4" "dave" \
-  "The cosmos, approximated" "Every time I look at a long-exposure photograph of the night sky I have to remind myself that the light in each of those points is thousands of years old." \
+  "Every time I look at a long-exposure photograph of the night sky I have to remind myself that the light in each of those points is thousands of years old." \
   "$IMG_DAVE1" '["photography","science","cosmos"]'; }
 
 post_080() { create_photo_post "$U4" "dave" \
-  "Systems in miniature" "A rock pool is a complete ecosystem. Every surface is occupied by something that eats and is eaten." \
+  "A rock pool is a complete ecosystem. Every surface is occupied by something that eats and is eaten." \
   "$IMG_DAVE2" '["photography","biology","nature"]'; }
 
 # ── Eve (081–100) ─────────────────────────────────────────────────────────────
@@ -666,42 +670,43 @@ post_091() { create_text_post "$U5" "eve" \
   '["music","art","design"]'; }
 
 post_092() { create_quote_post "$U5" "eve" \
-  "Picasso on creation" "Every act of creation is first of all an act of destruction." \
-  "Pablo Picasso" '["art","creativity","quotes"]'; }
+  "Every act of creation is first of all an act of destruction." \
+  "Pablo Picasso" "You cannot make something new without dismantling some of what you already have." \
+  '["art","creativity","quotes"]'; }
 
 post_093() { create_quote_post "$U5" "eve" \
-  "On style" "Style is knowing who you are, what you want to say, and not giving a damn." \
-  "Gore Vidal" '["art","writing","quotes"]'; }
+  "Style is knowing who you are, what you want to say, and not giving a damn." \
+  "Gore Vidal" "The not-giving-a-damn part is the hardest. It takes years." \
+  '["art","writing","quotes"]'; }
 
 post_094() { create_quote_post "$U5" "eve" \
-  "The artist's obligation" "An artist is not paid for his labor but for his vision." \
-  "James McNeill Whistler" '["art","creativity","quotes"]'; }
+  "An artist is not paid for his labor but for his vision." \
+  "James McNeill Whistler" "" \
+  '["art","creativity","quotes"]'; }
 
 post_095() { create_quote_post "$U5" "eve" \
-  "On practice" "An amateur practises until they can play it correctly. A professional practises until they cannot play it incorrectly." \
-  "Percy C. Buck" '["music","craft","quotes"]'; }
+  "An amateur practises until they can play it correctly. A professional practises until they cannot play it incorrectly." \
+  "Percy C. Buck" "The distinction between 'can' and 'cannot not' changed how I think about skill acquisition." \
+  '["music","craft","quotes"]'; }
 
 post_096() { create_link_post "$U5" "eve" \
-  "Lines of Code — music & code zine" \
   "A beautifully designed zine at the intersection of music, visual art, and programming. Free to read online." \
   "https://linesofcode.art" '["music","art","coding"]'; }
 
 post_097() { create_link_post "$U5" "eve" \
-  "Bandcamp" \
   "The best place to buy music directly from artists. The interface is ugly; the economics are better for musicians than any streaming platform." \
   "https://bandcamp.com" '["music","art","community"]'; }
 
 post_098() { create_link_post "$U5" "eve" \
-  "The Creative Independent" \
   "In-depth interviews with artists, musicians, and writers about their process. Every interview teaches me something." \
   "https://thecreativeindependent.com" '["art","creativity","reading"]'; }
 
 post_099() { create_photo_post "$U5" "eve" \
-  "Abstract study I" "Sometimes I take a photo just to see what a composition looks like through the lens instead of my eye." \
+  "Sometimes I take a photo just to see what a composition looks like through the lens instead of my eye." \
   "$IMG_EVE1" '["photography","abstract","art"]'; }
 
 post_100() { create_photo_post "$U5" "eve" \
-  "Portrait in available light" "Available light means accepting what the moment offers. That constraint produces more honest images than a studio." \
+  "Available light means accepting what the moment offers. That constraint produces more honest images than a studio." \
   "$IMG_EVE2" '["photography","portrait","light"]'; }
 
 # =============================================================================
