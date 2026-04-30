@@ -311,10 +311,10 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
-      title:       "On simplicity",
       content:     "Simplicity is the ultimate sophistication.",
       postType:    "quote",
       quoteSource: "Leonardo da Vinci",
+      userText:    "This has been my design north star for years. Less is always more.",
       authorId:    $uid,
       authorName:  "alice",
       tags:        ["design","quotes","simplicity"],
@@ -329,7 +329,6 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
-      title:   "Appwrite Docs",
       content: "The official Appwrite documentation is surprisingly readable. Highly recommended for anyone building a BaaS-powered static site.",
       postType: "link",
       linkUrl:  "https://appwrite.io/docs",
@@ -347,10 +346,10 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
-      title:       "Good design is invisible",
       content:     "Good design, when done well, should be invisible. It is only when it is done poorly that we notice it.",
       postType:    "quote",
       quoteSource: "Jony Ive",
+      userText:    "The best interfaces are the ones users never have to think about.",
       authorId:    $uid,
       authorName:  "carol",
       tags:        ["design","ux","quotes"],
@@ -365,7 +364,6 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
-      title:   "The Markdown Guide",
       content: "A free and open-source reference guide that explains how to use Markdown. Essential reading for any technical writer.",
       postType: "link",
       linkUrl:  "https://www.markdownguide.org",
@@ -423,7 +421,6 @@ if [[ -n "$IMG1" ]]; then
     '{
       documentId: "unique()",
       data: {
-        title:      "Morning light",
         content:    "Golden hour on a quiet trail. Some mornings the world just looks right.",
         postType:   "photo",
         imageId:    $img,
@@ -445,7 +442,6 @@ if [[ -n "$IMG2" ]]; then
     '{
       documentId: "unique()",
       data: {
-        title:      "City geometry",
         content:    "Lines and angles everywhere. Urban spaces have a visual logic of their own.",
         postType:   "photo",
         imageId:    $img,
@@ -467,7 +463,6 @@ if [[ -n "$IMG3" ]]; then
     '{
       documentId: "unique()",
       data: {
-        title:      "Texture study",
         content:    "Close-up surfaces reveal a whole other world of colour and form.",
         postType:   "photo",
         imageId:    $img,

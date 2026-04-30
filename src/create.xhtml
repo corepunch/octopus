@@ -21,7 +21,7 @@
         <form id="create-form" novalidate="novalidate">
 
           <!-- ── Text fields (shared: title + tags) ─────────────── -->
-          <div class="form-group" id="field-title">
+          <div class="form-group" id="field-title" style="display:none;">
             <label for="title">Title</label>
             <input class="form-control" id="title" type="text" placeholder="An interesting title…"/>
           </div>
@@ -78,6 +78,10 @@
             <div class="form-group">
               <label for="quote-source">Source <span class="label-note">(optional)</span></label>
               <input class="form-control" id="quote-source" type="text" placeholder="Author or origin of the quote"/>
+            </div>
+            <div class="form-group">
+              <label for="quote-user-text">Your thoughts <span class="label-note">(optional)</span></label>
+              <textarea class="form-control" id="quote-user-text" placeholder="What do you think about this quote?" style="min-height:80px;"></textarea>
             </div>
           </div>
 

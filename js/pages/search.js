@@ -87,6 +87,7 @@ async function doSearch() {
           imageUrl:    post.imageId ? getImageUrl(post.imageId) : '',
           linkUrl:     post.linkUrl || '',
           quoteSource: post.quoteSource || '',
+          userText:    post.userText || '',
         }))
         .join('');
     }

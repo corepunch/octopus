@@ -122,13 +122,13 @@ aw POST "/databases/$DB_ID/collections" "$(jq -n \
   }')" >/dev/null
 
 info "  → attributes…"
-# title: string(256) required
+# title: string(256) optional — only used by text posts
 attr posts string "$(jq -n \
-  '{key:"title", size:256, required:true}')"
+  '{key:"title", size:256, required:false}')"
 
-# content: string(65535) required  (markdown body)
+# content: string(65535) required  (markdown body / quote text / photo caption / link description)
 attr posts string "$(jq -n \
-  '{key:"content", size:65535, required:true}')"
+  '{key:"content", size:65535, required:false}')"
 
 # authorId: string(36) required  (Appwrite user $id)
 attr posts string "$(jq -n \
@@ -161,6 +161,10 @@ attr posts string "$(jq -n \
 # quoteSource: string(256) — attribution for quote posts
 attr posts string "$(jq -n \
   '{key:"quoteSource", size:256, required:false}')"
+
+# userText: string(2048) — poster's optional opinion on a quote post
+attr posts string "$(jq -n \
+  '{key:"userText", size:2048, required:false}')"
 
 info "  → indexes…"
 # Wait for all attributes to be available before creating indexes

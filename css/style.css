@@ -283,6 +283,7 @@ a:hover { text-decoration: underline; }
   color: var(--color-text-strong);
   display: block;
   margin-bottom: 4px;
+  overflow-wrap: anywhere;
 }
 .post-card-title:hover { color: var(--color-accent); }
 
@@ -507,6 +508,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .post-page-title-link {
   color: inherit;
   text-decoration: none;
+  overflow-wrap: anywhere;
 }
 .post-page-title-link:hover {
   color: var(--color-accent);
@@ -764,6 +766,12 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 /* ── Post card: quote ────────────────────────────────────── */
 .post-card-quote-link { display: block; text-decoration: none; }
 .post-card-quote-link:hover { text-decoration: none; }
+.post-card-user-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text);
+  margin: 0 0 8px;
+}
 .post-card-quote {
   font-size: 18px;
   font-style: italic;

@@ -74,7 +74,7 @@ The workflow creates:
 
 | Collection | Key attributes | Indexes |
 |---|---|---|
-| `posts` | `title`, `content` (markdown), `authorId`, `authorName`, `tags[]`, `published` | full-text on `title`, key on `authorId` |
+| `posts` | `title` (text posts only), `content`, `authorId`, `authorName`, `tags[]`, `published`, `postType`, `imageId`, `linkUrl`, `quoteSource`, `userText` (quote posts) | full-text on `title`, key on `authorId` |
 | `follows` | `followerId`, `followingId` | key on each, unique pair |
 | `profiles` | `userId`, `username`, `bio` | unique `userId`, full-text `username` |
 
