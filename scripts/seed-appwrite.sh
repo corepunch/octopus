@@ -27,6 +27,7 @@ PROJECT="${APPWRITE_PROJECT_ID:-69f1c06800389dc6a1a0}"
 API_KEY="${APPWRITE_API_KEY:?APPWRITE_API_KEY is required}"
 
 DB_ID="octopus-db"
+BUCKET_ID="post-images"
 RESET=false
 [[ "${1:-}" == "--reset" ]] && RESET=true
 
@@ -84,13 +85,74 @@ delete_all() {
   done <<<"$ids"
 }
 
+# ── Helper: delete all files in the storage bucket ───────────────────────────
+delete_all_files() {
+  warn "  Deleting all files in storage bucket '$BUCKET_ID'…"
+  local ids; ids=$(curl -s \
+    -H "X-Appwrite-Key: $API_KEY" \
+    -H "X-Appwrite-Project: $PROJECT" \
+    "$ENDPOINT/storage/buckets/$BUCKET_ID/files?limit=100" \
+    | jq -r '.files[]."$id" // empty')
+  if [[ -z "$ids" ]]; then
+    warn "  Bucket '$BUCKET_ID' is already empty."
+    return
+  fi
+  while IFS= read -r id; do
+    [[ -z "$id" ]] && continue
+    curl -s -o /dev/null \
+      -X DELETE \
+      -H "X-Appwrite-Key: $API_KEY" \
+      -H "X-Appwrite-Project: $PROJECT" \
+      "$ENDPOINT/storage/buckets/$BUCKET_ID/files/$id"
+    echo -e "  ${YELLOW}[~]${NC} deleted file $id"
+  done <<<"$ids"
+}
+
+# ── Helper: download an image from a URL and upload to Appwrite Storage ──────
+# Returns the Appwrite file $id on success, or empty string on failure.
+upload_photo() {
+  local url="$1"
+  local tmp_file; tmp_file=$(mktemp /tmp/seed-photo-XXXXXX.jpg)
+
+  info "  Downloading: $url"
+  if ! curl -sL --max-time 30 -o "$tmp_file" "$url"; then
+    warn "  Could not download image – skipping photo post."
+    rm -f "$tmp_file"
+    echo ""
+    return
+  fi
+
+  local raw; raw=$(curl -s -w "\n%{http_code}" \
+    -X POST \
+    -H "X-Appwrite-Key: $API_KEY" \
+    -H "X-Appwrite-Project: $PROJECT" \
+    -F "fileId=unique()" \
+    -F "file=@${tmp_file};type=image/jpeg" \
+    "$ENDPOINT/storage/buckets/$BUCKET_ID/files")
+
+  rm -f "$tmp_file"
+
+  local code; code=$(tail -n1 <<<"$raw")
+  local resp; resp=$(sed '$d' <<<"$raw")
+
+  if [[ "$code" -ge 400 ]]; then
+    warn "  Storage upload failed (HTTP $code) – skipping photo post."
+    echo "$resp" | jq -r '.message // "unknown error"' >&2
+    echo ""
+    return
+  fi
+
+  echo "$resp" | jq -r '."$id"'
+}
+
 # ── Optional reset ────────────────────────────────────────────────────────────
 if $RESET; then
-  warn "⚠️  RESET MODE – deleting all existing documents…"
+  warn "⚠️  RESET MODE – deleting all existing documents and files…"
   delete_all follows
   delete_all posts
   delete_all profiles
-  info "All documents deleted."
+  delete_all_files
+  info "All documents and files deleted."
   echo ""
 fi
 
@@ -349,7 +411,76 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     permissions: ["read(\"any\")"]
   }')" >/dev/null && info "  post: text – Colour contrast guide"
 
-# ── 3. Follows ────────────────────────────────────────────────────────────────
+# ── 3. Photo posts (uploaded from picsum.photos) ─────────────────────────────
+info "Uploading photo posts from picsum.photos…"
+
+# alice – nature / landscape
+IMG1=$(upload_photo "https://picsum.photos/seed/octopus-nature/1200/800")
+if [[ -n "$IMG1" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U1" \
+    --arg img "$IMG1" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:      "Morning light",
+        content:    "Golden hour on a quiet trail. Some mornings the world just looks right.",
+        postType:   "photo",
+        imageId:    $img,
+        authorId:   $uid,
+        authorName: "alice",
+        tags:       ["photography","nature","morning"],
+        published:  true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo post: Morning light (alice)"
+fi
+
+# bob – architecture / city
+IMG2=$(upload_photo "https://picsum.photos/seed/octopus-city/1200/800")
+if [[ -n "$IMG2" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U2" \
+    --arg img "$IMG2" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:      "City geometry",
+        content:    "Lines and angles everywhere. Urban spaces have a visual logic of their own.",
+        postType:   "photo",
+        imageId:    $img,
+        authorId:   $uid,
+        authorName: "bob",
+        tags:       ["photography","city","architecture"],
+        published:  true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo post: City geometry (bob)"
+fi
+
+# carol – abstract / texture
+IMG3=$(upload_photo "https://picsum.photos/seed/octopus-abstract/1200/800")
+if [[ -n "$IMG3" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U3" \
+    --arg img "$IMG3" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:      "Texture study",
+        content:    "Close-up surfaces reveal a whole other world of colour and form.",
+        postType:   "photo",
+        imageId:    $img,
+        authorId:   $uid,
+        authorName: "carol",
+        tags:       ["photography","texture","abstract","design"],
+        published:  true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo post: Texture study (carol)"
+fi
+
+# ── 4. Follows ────────────────────────────────────────────────────────────────
 info "Creating follow relationships…"
 
 # bob follows alice
@@ -386,7 +517,7 @@ aw POST "/databases/$DB_ID/collections/follows/documents" "$(jq -n \
 echo ""
 info "✅  Seed complete."
 info "    Profiles : alice, bob, carol"
-info "    Posts    : 12 (8 text, 2 quote, 2 link)"
+info "    Posts    : up to 15 (8 text, 2 quote, 2 link, 3 photo)"
 info "    Follows  : 3"
 echo ""
 warn "Note: seed profiles have fake user IDs and are read-only on the frontend."
