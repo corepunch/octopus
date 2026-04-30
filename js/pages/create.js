@@ -46,16 +46,36 @@ async function initCreate() {
     btn.addEventListener('click', () => switchType(btn.dataset.type));
   });
 
-  // ── Live markdown preview (text post only) ───────────────────────────────
-  const contentEl = document.getElementById('content');
-  const previewEl = document.getElementById('preview');
+  // ── Write / Preview tabs ─────────────────────────────────────────────────
+  const contentEl    = document.getElementById('content');
+  const writePaneEl  = document.getElementById('md-write-pane');
+  const previewPaneEl = document.getElementById('md-preview-pane');
+  const tabWrite     = document.getElementById('tab-write');
+  const tabPreview   = document.getElementById('tab-preview');
 
   function updatePreview() {
-    // renderMarkdown sanitises via DOMPurify (loaded on this page via markdown="true")
-    previewEl.innerHTML = renderMarkdown(contentEl.value);
+    previewPaneEl.innerHTML = renderMarkdown(contentEl.value);
   }
-  contentEl.addEventListener('input', updatePreview);
-  updatePreview();
+
+  tabWrite.addEventListener('click', () => {
+    tabWrite.classList.add('active');
+    tabWrite.setAttribute('aria-selected', 'true');
+    tabPreview.classList.remove('active');
+    tabPreview.setAttribute('aria-selected', 'false');
+    writePaneEl.style.display = 'block';
+    previewPaneEl.style.display = 'none';
+    contentEl.focus();
+  });
+
+  tabPreview.addEventListener('click', () => {
+    updatePreview();
+    tabPreview.classList.add('active');
+    tabPreview.setAttribute('aria-selected', 'true');
+    tabWrite.classList.remove('active');
+    tabWrite.setAttribute('aria-selected', 'false');
+    previewPaneEl.style.display = 'block';
+    writePaneEl.style.display = 'none';
+  });
 
   // ── Photo preview (revoke previous object URL to avoid memory leaks) ─────
   document.getElementById('photo-file').addEventListener('change', function () {

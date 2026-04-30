@@ -31,17 +31,23 @@
             <input class="form-control" id="tags" type="text" placeholder="technology, writing, opinion"/>
           </div>
 
-          <!-- ── Text post: markdown editor ───────────────────── -->
+          <!-- ── Text post: markdown editor (write/preview tabs) ─ -->
           <div id="section-text">
             <div class="form-group">
-              <div class="editor-wrap">
-                <div class="editor-pane">
-                  <label for="content">Content <span class="label-note">(Markdown supported)</span></label>
-                  <textarea class="form-control" id="content" placeholder="Write your post in **Markdown**…"></textarea>
+              <div class="md-editor">
+                <div class="md-editor-tabs" role="tablist">
+                  <button class="md-editor-tab active" id="tab-write" type="button"
+                          role="tab" aria-selected="true" aria-controls="md-write-pane">Write</button>
+                  <button class="md-editor-tab" id="tab-preview" type="button"
+                          role="tab" aria-selected="false" aria-controls="md-preview-pane">Preview</button>
+                  <span class="md-editor-hint">Markdown supported</span>
                 </div>
-                <div class="preview-pane-wrap">
-                  <label>Preview</label>
-                  <div class="preview-pane markdown-body" id="preview"></div>
+                <div class="md-editor-body">
+                  <div id="md-write-pane" role="tabpanel" aria-labelledby="tab-write">
+                    <textarea class="md-editor-textarea" id="content" placeholder="Write your post in **Markdown**…"></textarea>
+                  </div>
+                  <div id="md-preview-pane" class="markdown-body md-preview-pane" role="tabpanel"
+                       aria-labelledby="tab-preview" style="display:none;"></div>
                 </div>
               </div>
             </div>

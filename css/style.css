@@ -559,19 +559,64 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .markdown-body hr { border: none; border-top: 1px solid var(--color-border); margin: 20px 0; }
 .markdown-body a { color: var(--color-accent); }
 
-/* ── Create post ─────────────────────────────────────────── */
-.editor-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.editor-wrap label { font-size: 13px; font-weight: bold; color: var(--color-text-muted); display: block; margin-bottom: 5px; }
-.editor-pane textarea { height: 340px; font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; }
-.preview-pane {
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 10px;
-  min-height: 340px;
-  background: var(--color-surface-soft);
-  overflow-y: auto;
+/* ── Markdown editor (write/preview tabs, create page) ───── */
+.md-editor {
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  overflow: hidden;
 }
-@media (max-width: 700px) { .editor-wrap { grid-template-columns: 1fr; } }
+.md-editor-tabs {
+  display: flex;
+  align-items: stretch;
+  background: var(--color-surface-muted);
+  border-bottom: 1px solid var(--color-border-strong);
+  gap: 0;
+}
+.md-editor-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+.md-editor-tab:hover { color: var(--color-text); }
+.md-editor-tab.active {
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+  border-bottom-color: var(--color-accent);
+}
+.md-editor-hint {
+  margin-left: auto;
+  padding: 0 12px;
+  font-size: 12px;
+  color: var(--color-text-subtle);
+  display: flex;
+  align-items: center;
+}
+.md-editor-body {
+  padding: 10px;
+  background: var(--color-surface);
+}
+.md-editor-textarea {
+  width: 100%;
+  height: 340px;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 13px;
+  border: none;
+  outline: none;
+  resize: vertical;
+  background: transparent;
+  color: var(--color-text);
+  display: block;
+}
+.md-editor-textarea:focus { outline: none; }
+.md-preview-pane { min-height: 340px; padding: 4px 2px; }
 
 /* ── Profile ─────────────────────────────────────────────── */
 .profile-header {
