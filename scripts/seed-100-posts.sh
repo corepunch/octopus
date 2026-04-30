@@ -104,11 +104,12 @@ upload_photo() {
 # ── Convenience wrappers ──────────────────────────────────────────────────────
 create_text_post() {
   local uid="$1" uname="$2" title="$3" content="$4" tags_json="$5"
+  local body; body=$(printf '%b' "$content")
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid    "$uid"     \
     --arg uname  "$uname"   \
     --arg title  "$title"   \
-    --arg body   "$content" \
+    --arg body   "$body"    \
     --argjson tags "$tags_json" \
     '{documentId:"unique()",data:{title:$title,content:$body,postType:"text",
       authorId:$uid,authorName:$uname,tags:$tags,published:true},
@@ -117,11 +118,12 @@ create_text_post() {
 
 create_quote_post() {
   local uid="$1" uname="$2" title="$3" content="$4" source="$5" tags_json="$6"
+  local body; body=$(printf '%b' "$content")
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid    "$uid"     \
     --arg uname  "$uname"   \
     --arg title  "$title"   \
-    --arg body   "$content" \
+    --arg body   "$body"    \
     --arg src    "$source"  \
     --argjson tags "$tags_json" \
     '{documentId:"unique()",data:{title:$title,content:$body,postType:"quote",
@@ -131,11 +133,12 @@ create_quote_post() {
 
 create_link_post() {
   local uid="$1" uname="$2" title="$3" content="$4" url="$5" tags_json="$6"
+  local body; body=$(printf '%b' "$content")
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid    "$uid"     \
     --arg uname  "$uname"   \
     --arg title  "$title"   \
-    --arg body   "$content" \
+    --arg body   "$body"    \
     --arg lurl   "$url"     \
     --argjson tags "$tags_json" \
     '{documentId:"unique()",data:{title:$title,content:$body,postType:"link",
@@ -146,11 +149,12 @@ create_link_post() {
 create_photo_post() {
   local uid="$1" uname="$2" title="$3" content="$4" img_id="$5" tags_json="$6"
   [[ -z "$img_id" ]] && { warn "  No image ID – skipping photo: $title"; return; }
+  local body; body=$(printf '%b' "$content")
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid    "$uid"     \
     --arg uname  "$uname"   \
     --arg title  "$title"   \
-    --arg body   "$content" \
+    --arg body   "$body"    \
     --arg img    "$img_id"  \
     --argjson tags "$tags_json" \
     '{documentId:"unique()",data:{title:$title,content:$body,postType:"photo",
