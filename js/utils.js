@@ -156,6 +156,74 @@ function iconOnly(name) {
   return (typeof ICONS !== 'undefined' && ICONS[name]) || '';
 }
 
+/** {{eq a b}} → true if a === b (used for post-type conditionals) */
+Handlebars.registerHelper('eq', (a, b) => a === b);
+
+/**
+ * Validate a URL and return it only if it uses http or https.
+ * Returns an empty string for any other scheme (javascript:, data:, etc.)
+ * to prevent stored XSS via link posts.
+ * @param {string} url
+ * @returns {string}
+ */
+function sanitizeUrl(url) {
+  if (!url) return '';
+  try {
+    const u = new URL(url);
+    return (u.protocol === 'http:' || u.protocol === 'https:') ? url : '';
+  } catch {
+    return '';
+  }
+}
+
+/** {{safeUrl url}} → the URL if http/https, empty string otherwise */
+Handlebars.registerHelper('safeUrl', (url) => sanitizeUrl(url));
+
+/**
+ * Return the public view URL for an Appwrite Storage file.
+ * @param {string} fileId – Appwrite Storage file $id
+ * @returns {string} absolute URL to view the file
+ */
+function getImageUrl(fileId) {
+  if (!fileId) return '';
+  return `${APPWRITE_ENDPOINT}/storage/buckets/${APPWRITE_BUCKET_ID}/files/${fileId}/view?project=${APPWRITE_PROJECT_ID}`;
+}
+
+/**
+ * Compress an image File to JPEG at ~30% quality.
+ * Downscales so neither dimension exceeds 1200 px.
+ * @param {File} file
+ * @returns {Promise<File>} compressed JPEG File
+ */
+function compressImage(file) {
+  return new Promise(function (resolve, reject) {
+    var reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = function (e) {
+      var img = new Image();
+      img.onerror = reject;
+      img.onload = function () {
+        var MAX = 1200;
+        var w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else       { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width  = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(function (blob) {
+          if (blob) resolve(new File([blob], 'image.jpg', { type: 'image/jpeg' }));
+          else      reject(new Error('Image compression failed'));
+        }, 'image/jpeg', 0.30);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 /**
  * Share a post using the Web Share API when available, falling back to
  * writing the post URL to the clipboard.
