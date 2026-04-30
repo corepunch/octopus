@@ -26,7 +26,7 @@
 {{else if (eq postType "link")}}
   <h1 class="post-page-title">
     {{#if linkUrl}}
-      <a href="{{safeUrl linkUrl}}" class="post-page-title-link" target="_blank" rel="noopener noreferrer">{{linkUrl}}</a>
+      <a href="{{safeUrl linkUrl}}" class="post-page-title-link" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{linkUrl}}</a>
     {{else}}
       Link
     {{/if}}
