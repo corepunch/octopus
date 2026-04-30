@@ -20,18 +20,16 @@ const TYPE_TIPS = {
   <li>Images are compressed to JPEG at 30% quality</li>
   <li>Max dimension: 1200 px</li>
   <li>Add an optional caption below the image</li>
-  <li>Title is optional for photo posts</li>
 </ul>`,
   quote: `<h3>Quote Tips</h3>
 <ul class="tip-list">
   <li>Keep the quote concise and punchy</li>
   <li>Add the source: a person, book, or URL</li>
-  <li>Title is optional for quote posts</li>
+  <li>Share your own opinion in "Your thoughts"</li>
 </ul>`,
   link: `<h3>Link Tips</h3>
 <ul class="tip-list">
   <li>Paste the full URL including https://</li>
-  <li>Add a title to give context</li>
   <li>Use the description to explain why it matters</li>
 </ul>`,
 };
@@ -112,32 +110,28 @@ async function initCreate() {
 
     } else if (createPostType === 'photo') {
       const fileInput = document.getElementById('photo-file');
-      const title     = document.getElementById('title').value.trim();
       const caption   = document.getElementById('photo-caption').value.trim();
       if (!fileInput.files[0]) { showAlert('alert', 'Please choose an image.', 'error'); return; }
-      docData.title   = title || 'Photo';
       docData.content = caption;
 
     } else if (createPostType === 'quote') {
       const quoteText   = document.getElementById('quote-text').value.trim();
       const quoteSource = document.getElementById('quote-source').value.trim();
-      const title       = document.getElementById('title').value.trim();
+      const userText    = document.getElementById('quote-user-text').value.trim();
       if (!quoteText) { showAlert('alert', 'Quote text is required.', 'error'); return; }
-      docData.title       = title || quoteText.slice(0, 80);
       docData.content     = quoteText;
       docData.quoteSource = quoteSource;
+      if (userText) docData.userText = userText;
 
     } else if (createPostType === 'link') {
       const linkUrl = document.getElementById('link-url').value.trim();
       const desc    = document.getElementById('link-desc').value.trim();
-      const title   = document.getElementById('title').value.trim();
       if (!linkUrl) { showAlert('alert', 'URL is required.', 'error'); return; }
       // Require http/https to prevent javascript: or data: XSS
       if (!sanitizeUrl(linkUrl)) {
         showAlert('alert', 'URL must start with http:// or https://', 'error');
         return;
       }
-      docData.title   = title || linkUrl;
       docData.content = desc;
       docData.linkUrl = linkUrl;
     }
@@ -164,6 +158,9 @@ async function initCreate() {
       btn.textContent = 'Publish';
     }
   });
+
+  // ── Initialise form for the default type (after all listeners are wired) ─
+  switchType(createPostType);
 }
 
 function switchType(type) {
@@ -188,10 +185,10 @@ function switchType(type) {
     if (el) el.style.display = (t === type) ? '' : 'none';
   });
 
-  // Show/hide title field (always visible but labelled differently)
-  const titleLabel = document.querySelector('#field-title label');
-  if (titleLabel) {
-    titleLabel.textContent = (type === 'photo' || type === 'quote') ? 'Title (optional)' : 'Title';
+  // Show/hide title field (only for text posts)
+  const titleField = document.getElementById('field-title');
+  if (titleField) {
+    titleField.style.display = (type === 'text') ? '' : 'none';
   }
 
   // Update sidebar tips
