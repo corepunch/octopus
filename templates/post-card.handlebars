@@ -16,14 +16,14 @@
     </div>
   {{else if (eq postType "quote")}}
     <div class="post-card-body">
-      <div class="post-meta">
-        by <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
-        · {{timeAgo createdAt}}
-      </div>
       <a href="post.html?id={{id}}" class="post-card-quote-link">
         <blockquote class="post-card-quote">{{content}}</blockquote>
         {{#if quoteSource}}<cite class="post-card-quote-source">— {{quoteSource}}</cite>{{/if}}
       </a>
+      <div class="post-meta">
+        by <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
+        · {{timeAgo createdAt}}
+      </div>
       <div style="margin-top:6px;">{{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}</div>
       <div class="post-actions">
         <a href="post.html?id={{id}}" class="action-btn">{{icon "message-circle"}} Comment</a>
@@ -32,12 +32,15 @@
     </div>
   {{else if (eq postType "link")}}
     <div class="post-card-body">
+      {{#if linkUrl}}
+        <a href="{{safeUrl linkUrl}}" class="post-card-title" target="_blank" rel="noopener noreferrer">{{title}}</a>
+      {{else}}
+        <a href="post.html?id={{id}}" class="post-card-title">{{title}}</a>
+      {{/if}}
       <div class="post-meta">
         by <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
         · {{timeAgo createdAt}}
       </div>
-      <a href="post.html?id={{id}}" class="post-card-title">{{title}}</a>
-      {{#if linkUrl}}<a href="{{safeUrl linkUrl}}" class="post-card-link-url" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{linkUrl}}</a>{{/if}}
       {{#if content}}<p class="post-excerpt">{{excerpt content}}</p>{{/if}}
       <div>{{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}</div>
       <div class="post-actions">
