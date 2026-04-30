@@ -179,6 +179,11 @@ function sanitizeUrl(url) {
 /** {{safeUrl url}} → the URL if http/https, empty string otherwise */
 Handlebars.registerHelper('safeUrl', (url) => sanitizeUrl(url));
 
+/** {{displayUrl url}} → URL without the leading http:// or https:// */
+Handlebars.registerHelper('displayUrl', (url) =>
+  sanitizeUrl(url).replace(/^https?:\/\//i, '')
+);
+
 /**
  * Return the public view URL for an Appwrite Storage file.
  * @param {string} fileId – Appwrite Storage file $id

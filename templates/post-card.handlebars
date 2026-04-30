@@ -33,7 +33,7 @@
   {{else if (eq postType "link")}}
     <div class="post-card-body">
       {{#if linkUrl}}
-        <a href="{{safeUrl linkUrl}}" class="post-card-title" target="_blank" rel="noopener noreferrer">{{linkUrl}}</a>
+        <a href="{{safeUrl linkUrl}}" class="post-card-title" target="_blank" rel="noopener noreferrer">{{displayUrl linkUrl}}</a>
       {{else}}
         <a href="post.html?id={{id}}" class="post-card-title">Link</a>
       {{/if}}
