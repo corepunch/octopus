@@ -18,17 +18,7 @@ async function initPost() {
     const post = await databases.getDocument(APPWRITE_DB_ID, COL_POSTS, postId);
 
     const postType = post.postType || 'text';
-    let pageTitle;
-    if (postType === 'text') {
-      pageTitle = post.title || 'Post';
-    } else if (postType === 'quote') {
-      pageTitle = (post.content || '').slice(0, 60) + ((post.content || '').length > 60 ? '…' : '');
-    } else if (postType === 'link') {
-      try { pageTitle = new URL(post.linkUrl).hostname; } catch { pageTitle = post.linkUrl || 'Link'; }
-    } else {
-      pageTitle = 'Photo';
-    }
-    document.title = `${pageTitle} – Octopus`;
+    document.title = `${postLabel(post)} – Octopus`;
 
     container.innerHTML = renderTemplate('post-header', {
       id:          post.$id,

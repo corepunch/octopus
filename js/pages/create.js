@@ -89,9 +89,6 @@ async function initCreate() {
     wrap.style.display = 'block';
   });
 
-  // ── Initialise form for the default type ─────────────────────────────────
-  switchType(createPostType);
-
   // ── Form submit ──────────────────────────────────────────────────────────
   document.getElementById('create-form').addEventListener('submit', async e => {
     e.preventDefault();
@@ -161,6 +158,9 @@ async function initCreate() {
       btn.textContent = 'Publish';
     }
   });
+
+  // ── Initialise form for the default type (after all listeners are wired) ─
+  switchType(createPostType);
 }
 
 function switchType(type) {
