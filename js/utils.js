@@ -147,8 +147,37 @@ function iconLabel(name, label) {
   return svg + ' ' + escapeHtml(label);
 }
 
+/**
+ * Return just the icon SVG for icon-only controls.
+ * @param {string} name – icon key from ICONS
+ * @returns {string} safe HTML string – icon is always from ICONS
+ */
+function iconOnly(name) {
+  return (typeof ICONS !== 'undefined' && ICONS[name]) || '';
+}
+
 /** {{eq a b}} → true if a === b (used for post-type conditionals) */
 Handlebars.registerHelper('eq', (a, b) => a === b);
+
+/**
+ * Validate a URL and return it only if it uses http or https.
+ * Returns an empty string for any other scheme (javascript:, data:, etc.)
+ * to prevent stored XSS via link posts.
+ * @param {string} url
+ * @returns {string}
+ */
+function sanitizeUrl(url) {
+  if (!url) return '';
+  try {
+    const u = new URL(url);
+    return (u.protocol === 'http:' || u.protocol === 'https:') ? url : '';
+  } catch {
+    return '';
+  }
+}
+
+/** {{safeUrl url}} → the URL if http/https, empty string otherwise */
+Handlebars.registerHelper('safeUrl', (url) => sanitizeUrl(url));
 
 /**
  * Return the public view URL for an Appwrite Storage file.

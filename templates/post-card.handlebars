@@ -37,7 +37,7 @@
         · {{timeAgo createdAt}}
       </div>
       <a href="post.html?id={{id}}" class="post-card-title">{{title}}</a>
-      {{#if linkUrl}}<a href="{{linkUrl}}" class="post-card-link-url" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{linkUrl}}</a>{{/if}}
+      {{#if linkUrl}}<a href="{{safeUrl linkUrl}}" class="post-card-link-url" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{linkUrl}}</a>{{/if}}
       {{#if content}}<p class="post-excerpt">{{excerpt content}}</p>{{/if}}
       <div>{{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}</div>
       <div class="post-actions">

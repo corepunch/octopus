@@ -55,7 +55,7 @@
         · {{timeAgo createdAt}}
       </div>
       <a href="post.html?id={{id}}" class="post-card-title">{{title}}</a>
-      {{#if linkUrl}}<a href="{{linkUrl}}" class="post-card-link-url" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{linkUrl}}</a>{{/if}}
+      {{#if linkUrl}}<a href="{{safeUrl linkUrl}}" class="post-card-link-url" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{linkUrl}}</a>{{/if}}
       {{#if content}}<p class="post-excerpt">{{excerpt content}}</p>{{/if}}
       <div>{{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}</div>
       <div class="post-actions">
@@ -161,7 +161,7 @@
     <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
-  {{#if linkUrl}}<a href="{{linkUrl}}" class="post-page-link-card" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{linkUrl}}</a>{{/if}}
+  {{#if linkUrl}}<a href="{{safeUrl linkUrl}}" class="post-page-link-card" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{linkUrl}}</a>{{/if}}
   {{#if content}}<div class="markdown-body" style="margin-top:16px;">{{markdown content}}</div>{{/if}}
 {{else}}
   <h1 class="post-page-title">{{title}}</h1>

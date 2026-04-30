@@ -3,6 +3,9 @@
  */
 let createPostType = 'text';
 
+// Track the current photo preview object URL so it can be revoked when replaced.
+let photoPreviewUrl = null;
+
 // Sidebar tip copy per post type
 const TYPE_TIPS = {
   text: `<h3>Writing Tips</h3>
@@ -54,14 +57,17 @@ async function initCreate() {
   contentEl.addEventListener('input', updatePreview);
   updatePreview();
 
-  // ── Photo preview ────────────────────────────────────────────────────────
+  // ── Photo preview (revoke previous object URL to avoid memory leaks) ─────
   document.getElementById('photo-file').addEventListener('change', function () {
     const file = this.files[0];
     if (!file) return;
+    if (photoPreviewUrl) {
+      URL.revokeObjectURL(photoPreviewUrl);
+    }
+    photoPreviewUrl = URL.createObjectURL(file);
     const wrap = document.getElementById('photo-preview-wrap');
-    const img  = document.getElementById('photo-preview-img');
-    const url  = URL.createObjectURL(file);
-    img.src    = url;
+    const imgEl = document.getElementById('photo-preview-img');
+    imgEl.src = photoPreviewUrl;
     wrap.style.display = 'block';
   });
 
@@ -72,50 +78,61 @@ async function initCreate() {
 
     const tags = parseTags(document.getElementById('tags').value);
     const btn  = document.getElementById('btn-publish');
+
+    // ── Validate first; button is not disabled until validation passes ───
+    let docData = { tags, authorId: user.$id, authorName: user.name, postType: createPostType };
+
+    if (createPostType === 'text') {
+      const title   = document.getElementById('title').value.trim();
+      const content = contentEl.value.trim();
+      if (!title)   { showAlert('alert', 'Title is required.', 'error'); return; }
+      if (!content) { showAlert('alert', 'Content is required.', 'error'); return; }
+      docData.title   = title;
+      docData.content = content;
+
+    } else if (createPostType === 'photo') {
+      const fileInput = document.getElementById('photo-file');
+      const title     = document.getElementById('title').value.trim();
+      const caption   = document.getElementById('photo-caption').value.trim();
+      if (!fileInput.files[0]) { showAlert('alert', 'Please choose an image.', 'error'); return; }
+      docData.title   = title || 'Photo';
+      docData.content = caption;
+
+    } else if (createPostType === 'quote') {
+      const quoteText   = document.getElementById('quote-text').value.trim();
+      const quoteSource = document.getElementById('quote-source').value.trim();
+      const title       = document.getElementById('title').value.trim();
+      if (!quoteText) { showAlert('alert', 'Quote text is required.', 'error'); return; }
+      docData.title       = title || quoteText.slice(0, 80);
+      docData.content     = quoteText;
+      docData.quoteSource = quoteSource;
+
+    } else if (createPostType === 'link') {
+      const linkUrl = document.getElementById('link-url').value.trim();
+      const desc    = document.getElementById('link-desc').value.trim();
+      const title   = document.getElementById('title').value.trim();
+      if (!linkUrl) { showAlert('alert', 'URL is required.', 'error'); return; }
+      // Require http/https to prevent javascript: or data: XSS
+      if (!sanitizeUrl(linkUrl)) {
+        showAlert('alert', 'URL must start with http:// or https://', 'error');
+        return;
+      }
+      docData.title   = title || linkUrl;
+      docData.content = desc;
+      docData.linkUrl = linkUrl;
+    }
+
+    // ── All validation passed – disable button and publish ───────────────
     btn.disabled    = true;
     btn.textContent = 'Publishing…';
 
     try {
-      let docData = { tags, authorId: user.$id, authorName: user.name, postType: createPostType };
-
-      if (createPostType === 'text') {
-        const title   = document.getElementById('title').value.trim();
-        const content = contentEl.value.trim();
-        if (!title)   { showAlert('alert', 'Title is required.', 'error'); return; }
-        if (!content) { showAlert('alert', 'Content is required.', 'error'); return; }
-        docData.title   = title;
-        docData.content = content;
-
-      } else if (createPostType === 'photo') {
-        const fileInput = document.getElementById('photo-file');
-        const caption   = document.getElementById('photo-caption').value.trim();
-        const title     = document.getElementById('title').value.trim();
-        if (!fileInput.files[0]) { showAlert('alert', 'Please choose an image.', 'error'); return; }
-
+      if (createPostType === 'photo') {
         showAlert('alert', 'Compressing and uploading image…', 'info');
+        const fileInput  = document.getElementById('photo-file');
         const compressed = await compressImage(fileInput.files[0]);
         const uploaded   = await storage.createFile(APPWRITE_BUCKET_ID, ID.unique(), compressed);
         docData.imageId  = uploaded.$id;
-        docData.title    = title || 'Photo';
-        docData.content  = caption;
-
-      } else if (createPostType === 'quote') {
-        const quoteText   = document.getElementById('quote-text').value.trim();
-        const quoteSource = document.getElementById('quote-source').value.trim();
-        const title       = document.getElementById('title').value.trim();
-        if (!quoteText) { showAlert('alert', 'Quote text is required.', 'error'); return; }
-        docData.title       = title || quoteText.slice(0, 80);
-        docData.content     = quoteText;
-        docData.quoteSource = quoteSource;
-
-      } else if (createPostType === 'link') {
-        const linkUrl = document.getElementById('link-url').value.trim();
-        const desc    = document.getElementById('link-desc').value.trim();
-        const title   = document.getElementById('title').value.trim();
-        if (!linkUrl) { showAlert('alert', 'URL is required.', 'error'); return; }
-        docData.title   = title || linkUrl;
-        docData.content = desc;
-        docData.linkUrl = linkUrl;
       }
 
       hideAlert('alert');
@@ -131,6 +148,14 @@ async function initCreate() {
 
 function switchType(type) {
   createPostType = type;
+
+  // Revoke photo preview URL when switching away from photo type
+  if (type !== 'photo' && photoPreviewUrl) {
+    URL.revokeObjectURL(photoPreviewUrl);
+    photoPreviewUrl = null;
+    const wrap = document.getElementById('photo-preview-wrap');
+    if (wrap) wrap.style.display = 'none';
+  }
 
   // Update picker button states
   document.querySelectorAll('.post-type-btn').forEach(btn => {
