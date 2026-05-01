@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# provision-appwrite.sh
+# provision-appwrite.sh  (v2 – adds comments and likes collections)
 #
 # Creates the Octopus database schema on Appwrite using the REST API.
 # No npm / Node.js required – only curl and jq.
