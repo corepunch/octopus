@@ -11,9 +11,11 @@ const APPWRITE_PROJECT_ID = '69f1c06800389dc6a1a0';
 const APPWRITE_DB_ID = 'octopus-db';
 
 // Collection IDs – must match what the provision script creates
-const COL_POSTS   = 'posts';
-const COL_FOLLOWS = 'follows';
-const COL_USERS   = 'profiles';
+const COL_POSTS    = 'posts';
+const COL_FOLLOWS  = 'follows';
+const COL_USERS    = 'profiles';
+const COL_COMMENTS = 'comments';
+const COL_LIKES    = 'likes';
 
 // Storage bucket for post images (created by the provision script)
 const APPWRITE_BUCKET_ID = 'post-images';

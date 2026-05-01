@@ -108,7 +108,46 @@
   </div>
 </div>`;
 
-  // ── index.html ────────────────────────────────────────────────────────────
+  /** Single reply (one level deep under a top-level comment). */
+  const commentReply = `
+<div class="comment-item comment-item--reply" id="comment-{{id}}">
+  <div class="comment-meta">
+    <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
+    · {{timeAgo createdAt}}
+  </div>
+  <div class="comment-body">{{body}}</div>
+  <div class="comment-actions">
+    <button class="action-btn action-btn--like{{#if liked}} action-btn--liked{{/if}}"
+      data-like-id="{{id}}" data-like-type="comment">
+      {{icon "heart"}} <span class="like-count">{{likeCount}}</span>
+    </button>
+  </div>
+</div>`;
+
+  /** Top-level comment with optional nested replies. */
+  const commentItem = `
+<div class="comment-item" id="comment-{{id}}">
+  <div class="comment-meta">
+    <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
+    · {{timeAgo createdAt}}
+  </div>
+  <div class="comment-body">{{body}}</div>
+  <div class="comment-actions">
+    <button class="action-btn action-btn--like{{#if liked}} action-btn--liked{{/if}}"
+      data-like-id="{{id}}" data-like-type="comment">
+      {{icon "heart"}} <span class="like-count">{{likeCount}}</span>
+    </button>
+    <button class="action-btn reply-btn"
+      data-comment-id="{{id}}" data-author-name="{{authorName}}">
+      {{icon "corner-down-right"}} Reply
+    </button>
+  </div>
+  {{#if replies.length}}
+  <div class="comment-replies">
+    {{#each replies}}{{> comment-reply}}{{/each}}
+  </div>
+  {{/if}}
+</div>`;
 
   const noFollowing = `
 <div class="empty-state">
@@ -137,6 +176,7 @@
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
   <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
@@ -150,6 +190,7 @@
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
   <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="{{excerpt content}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
@@ -168,6 +209,7 @@
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
   <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="{{linkUrl}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
@@ -180,6 +222,7 @@
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
   <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
@@ -286,6 +329,8 @@
     'section-heading': sectionHeading,
     'no-results':      noResults,
     'nav-auth':        navAuth,
+    'comment-reply':   commentReply,
+    'comment-item':    commentItem,
   };
 
   for (const [name, src] of Object.entries(defs)) {
