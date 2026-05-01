@@ -685,8 +685,8 @@ POST_ALICE=$(curl -s \
 POST_ALICE2=$(curl -s \
   -H "X-Appwrite-Key: $API_KEY" \
   -H "X-Appwrite-Project: $PROJECT" \
-  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U1%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(2)" \
-  | jq -r '.documents[1]."$id" // empty')
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U1%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)&queries[]=offset(1)" \
+  | jq -r '.documents[0]."$id" // empty')
 
 POST_BOB=$(curl -s \
   -H "X-Appwrite-Key: $API_KEY" \
@@ -697,8 +697,8 @@ POST_BOB=$(curl -s \
 POST_BOB2=$(curl -s \
   -H "X-Appwrite-Key: $API_KEY" \
   -H "X-Appwrite-Project: $PROJECT" \
-  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U2%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(2)" \
-  | jq -r '.documents[1]."$id" // empty')
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U2%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)&queries[]=offset(1)" \
+  | jq -r '.documents[0]."$id" // empty')
 
 POST_CAROL=$(curl -s \
   -H "X-Appwrite-Key: $API_KEY" \
@@ -709,8 +709,8 @@ POST_CAROL=$(curl -s \
 POST_CAROL2=$(curl -s \
   -H "X-Appwrite-Key: $API_KEY" \
   -H "X-Appwrite-Project: $PROJECT" \
-  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U3%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(2)" \
-  | jq -r '.documents[1]."$id" // empty')
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U3%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)&queries[]=offset(1)" \
+  | jq -r '.documents[0]."$id" // empty')
 
 info "  alice post 1 : ${POST_ALICE:-<not found>}"
 info "  alice post 2 : ${POST_ALICE2:-<not found>}"
