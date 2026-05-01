@@ -181,16 +181,18 @@ async function loadComments(postId) {
     const likedDocMap  = {};  // commentId → like document $id (for un-liking)
 
     if (commentIds.length > 0) {
+      // Appwrite Query.equal supports arrays of up to 100 values.
+      // We already cap allComments at 100, so passing all IDs is safe.
       const [likeRes, userLikeRes] = await Promise.all([
         databases.listDocuments(APPWRITE_DB_ID, COL_LIKES, [
           Query.equal('targetType', 'comment'),
-          Query.equal('targetId',   commentIds.slice(0, 25)),
-          Query.limit(100),
+          Query.equal('targetId',   commentIds),
+          Query.limit(500),
         ]),
         currentUser
           ? databases.listDocuments(APPWRITE_DB_ID, COL_LIKES, [
               Query.equal('targetType', 'comment'),
-              Query.equal('targetId',   commentIds.slice(0, 25)),
+              Query.equal('targetId',   commentIds),
               Query.equal('userId',     currentUser.$id),
               Query.limit(100),
             ])
