@@ -296,7 +296,103 @@ aw POST "/databases/$DB_ID/collections/profiles/indexes" "$(jq -n \
 
 info "Collection 'profiles' done."
 
-# ── 5. Storage bucket: post-images ────────────────────────────────────────────
+# ── 5. Collection: comments ───────────────────────────────────────────────────
+info "Creating collection 'comments'…"
+aw POST "/databases/$DB_ID/collections" "$(jq -n \
+  --arg id   "comments" \
+  --arg name "Comments" \
+  '{
+    collectionId: $id,
+    name:         $name,
+    documentSecurity: true,
+    permissions: [
+      "read(\"any\")",
+      "create(\"users\")"
+    ]
+  }')" >/dev/null
+
+info "  → attributes…"
+# postId: the post being commented on
+attr comments string "$(jq -n '{key:"postId",     size:36,   required:true}')"
+# authorId: commenter's Appwrite user $id
+attr comments string "$(jq -n '{key:"authorId",   size:36,   required:true}')"
+# authorName: display name at comment time
+attr comments string "$(jq -n '{key:"authorName", size:128,  required:true}')"
+# body: comment text (plain text, max 4096 chars)
+attr comments string "$(jq -n '{key:"body",       size:4096, required:true}')"
+# parentId: empty string for top-level comments, parent comment $id for replies
+attr comments string "$(jq -n '{key:"parentId",   size:36,   required:false, default:""}')"
+
+info "  → indexes…"
+wait_for_attrs comments
+
+# All comments on a post
+aw POST "/databases/$DB_ID/collections/comments/indexes" "$(jq -n \
+  '{
+    key:        "idx_comments_post",
+    type:       "key",
+    attributes: ["postId"],
+    orders:     ["ASC"]
+  }')" >/dev/null
+
+# All replies under a parent comment
+aw POST "/databases/$DB_ID/collections/comments/indexes" "$(jq -n \
+  '{
+    key:        "idx_comments_parent",
+    type:       "key",
+    attributes: ["parentId"],
+    orders:     ["ASC"]
+  }')" >/dev/null
+
+info "Collection 'comments' done."
+
+# ── 6. Collection: likes ───────────────────────────────────────────────────────
+info "Creating collection 'likes'…"
+aw POST "/databases/$DB_ID/collections" "$(jq -n \
+  --arg id   "likes" \
+  --arg name "Likes" \
+  '{
+    collectionId: $id,
+    name:         $name,
+    documentSecurity: true,
+    permissions: [
+      "read(\"any\")",
+      "create(\"users\")"
+    ]
+  }')" >/dev/null
+
+info "  → attributes…"
+# targetId: the $id of the post or comment being liked
+attr likes string "$(jq -n '{key:"targetId",   size:36, required:true}')"
+# targetType: "post" or "comment"
+attr likes string "$(jq -n '{key:"targetType", size:16, required:true}')"
+# userId: the user who liked
+attr likes string "$(jq -n '{key:"userId",     size:36, required:true}')"
+
+info "  → indexes…"
+wait_for_attrs likes
+
+# All likes for a given target (count likes per post/comment)
+aw POST "/databases/$DB_ID/collections/likes/indexes" "$(jq -n \
+  '{
+    key:        "idx_likes_target",
+    type:       "key",
+    attributes: ["targetId"],
+    orders:     ["ASC"]
+  }')" >/dev/null
+
+# Prevent duplicate likes: one like per user per target
+aw POST "/databases/$DB_ID/collections/likes/indexes" "$(jq -n \
+  '{
+    key:        "idx_likes_unique",
+    type:       "unique",
+    attributes: ["userId","targetId"],
+    orders:     ["ASC","ASC"]
+  }')" >/dev/null
+
+info "Collection 'likes' done."
+
+# ── 7. Storage bucket: post-images ────────────────────────────────────────────
 info "Creating storage bucket 'post-images'…"
 bucket_raw=$(curl -s -w "\n%{http_code}" \
   -X POST \
@@ -323,7 +419,7 @@ else
   sed '$d' <<<"$bucket_raw" | jq -r '.message // empty' >&2
 fi
 
-# ── 6. Register Web Platform (CORS) ───────────────────────────────────────────
+# ── 8. Register Web Platform (CORS) ───────────────────────────────────────────
 # Appwrite blocks browser requests from origins that are not registered as Web
 # platforms on the project (HTTP 403 / CORS errors). Registering the platform
 # here means users who run this script never have to do it manually.
@@ -357,7 +453,7 @@ fi
 echo ""
 info "✅  Appwrite schema provisioned successfully."
 info "    Database :  $DB_ID"
-info "    Collections: posts, follows, profiles"
+info "    Collections: posts, follows, profiles, comments, likes"
 info "    Storage bucket: post-images"
 info "    Web platform: $PAGES_HOSTNAME"
 echo ""

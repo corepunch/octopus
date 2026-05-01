@@ -1,0 +1,13 @@
+<div class="comment-item comment-item--reply" id="comment-{{id}}">
+  <div class="comment-meta">
+    <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
+    · {{timeAgo createdAt}}
+  </div>
+  <div class="comment-body">{{body}}</div>
+  <div class="comment-actions">
+    <button class="action-btn action-btn--like{{#if liked}} action-btn--liked{{/if}}"
+      data-like-id="{{id}}" data-like-type="comment">
+      {{icon "heart"}} <span class="like-count">{{likeCount}}</span>
+    </button>
+  </div>
+</div>

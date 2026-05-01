@@ -851,3 +851,61 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   margin-bottom: 6px;
 }
 .post-page-link-card:hover { background: var(--hover-accent-bg); text-decoration: underline; }
+
+/* ── Like button (filled heart when liked) ───────────────── */
+.action-btn--liked { color: var(--color-danger) !important; }
+.action-btn--liked svg { fill: var(--color-danger); stroke: var(--color-danger); }
+.action-btn--like:hover { color: var(--color-danger); }
+
+/* ── Comments section ────────────────────────────────────── */
+.comments-section {
+  margin-top: 28px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-border);
+}
+
+.comment-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.comment-item:last-child { border-bottom: none; }
+
+.comment-item--reply {
+  padding: 10px 0 10px 16px;
+  border-bottom: 1px solid var(--color-surface-muted);
+}
+
+.comment-replies {
+  margin-top: 8px;
+  padding-left: 12px;
+  border-left: 2px solid var(--color-border);
+}
+
+.comment-meta {
+  font-size: 12px;
+  color: var(--color-text-subtle);
+  margin-bottom: 5px;
+}
+.comment-meta .author-link { font-weight: bold; color: var(--color-accent); }
+
+.comment-body {
+  font-size: 14px;
+  color: var(--color-text);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 6px;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.comment-form {
+  margin: 12px 0 16px;
+}
+.comment-reply-form-wrap {
+  margin-top: 10px;
+}
+

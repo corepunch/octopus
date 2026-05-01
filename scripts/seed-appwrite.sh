@@ -148,6 +148,8 @@ upload_photo() {
 # ── Optional reset ────────────────────────────────────────────────────────────
 if $RESET; then
   warn "⚠️  RESET MODE – deleting all existing documents and files…"
+  delete_all likes
+  delete_all comments
   delete_all follows
   delete_all posts
   delete_all profiles
@@ -508,12 +510,231 @@ aw POST "/databases/$DB_ID/collections/follows/documents" "$(jq -n \
     permissions: ["read(\"users\")"]
   }')" >/dev/null && info "  alice → carol"
 
+# ── 5. Fetch post IDs for comment & like seeds ────────────────────────────────
+info "Fetching post IDs for comment/like seed data…"
+
+# Grab the $id of the first post for each seed author (ordered by creation time)
+POST_ALICE=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U1%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+POST_BOB=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U2%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+POST_CAROL=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U3%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+info "  alice's post : ${POST_ALICE:-<not found>}"
+info "  bob's post   : ${POST_BOB:-<not found>}"
+info "  carol's post : ${POST_CAROL:-<not found>}"
+
+# ── 6. Comments ───────────────────────────────────────────────────────────────
+info "Creating comments…"
+
+# bob comments on alice's first post (top-level)
+if [[ -n "$POST_ALICE" ]]; then
+  C1=$(aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid  "$POST_ALICE" \
+    --arg uid  "$U2" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "bob",
+        body:       "Great first post! This is exactly the kind of content I was hoping to find here.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" | jq -r '."$id"') && info "  bob → alice post (top-level)"
+
+  # carol replies to bob's comment
+  if [[ -n "$C1" ]]; then
+    aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+      --arg pid  "$POST_ALICE" \
+      --arg uid  "$U3" \
+      --arg par  "$C1" \
+      '{
+        documentId: "unique()",
+        data: {
+          postId:     $pid,
+          authorId:   $uid,
+          authorName: "carol",
+          body:       "Agreed! I also love how clean the layout is.",
+          parentId:   $par
+        },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  carol replies to bob"
+  fi
+
+  # carol also leaves a top-level comment
+  C2=$(aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid  "$POST_ALICE" \
+    --arg uid  "$U3" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "carol",
+        body:       "Welcome to Octopus! Looking forward to reading more from you.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" | jq -r '."$id"') && info "  carol → alice post (top-level)"
+fi
+
+# alice comments on bob's first post (top-level)
+if [[ -n "$POST_BOB" ]]; then
+  C3=$(aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid  "$POST_BOB" \
+    --arg uid  "$U1" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "alice",
+        body:       "The zero-dependency approach is underrated. I switched to it for my own projects and never looked back.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" | jq -r '."$id"') && info "  alice → bob post (top-level)"
+
+  # bob replies to his own comment thread
+  if [[ -n "$C3" ]]; then
+    aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+      --arg pid  "$POST_BOB" \
+      --arg uid  "$U2" \
+      --arg par  "$C3" \
+      '{
+        documentId: "unique()",
+        data: {
+          postId:     $pid,
+          authorId:   $uid,
+          authorName: "bob",
+          body:       "Exactly! Once you remove the build step the whole mental model simplifies.",
+          parentId:   $par
+        },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  bob replies to alice"
+  fi
+fi
+
+# bob comments on carol's first post
+if [[ -n "$POST_CAROL" ]]; then
+  aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid  "$POST_CAROL" \
+    --arg uid  "$U2" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "bob",
+        body:       "Design tokens changed how I collaborate with designers. Highly recommend anyone who hasn'"'"'t tried them.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  bob → carol post"
+fi
+
+# ── 7. Likes ──────────────────────────────────────────────────────────────────
+info "Creating likes…"
+
+# bob likes alice's first post
+if [[ -n "$POST_ALICE" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_ALICE" \
+    --arg uid "$U2" \
+    '{
+      documentId: "unique()",
+      data: { targetId: $tid, targetType: "post", userId: $uid },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  bob liked alice's post"
+
+  # carol likes alice's first post
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_ALICE" \
+    --arg uid "$U3" \
+    '{
+      documentId: "unique()",
+      data: { targetId: $tid, targetType: "post", userId: $uid },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  carol liked alice's post"
+
+  # bob likes carol's top-level comment (C2) on alice's post
+  if [[ -n "${C2:-}" ]]; then
+    aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+      --arg tid "$C2" \
+      --arg uid "$U2" \
+      '{
+        documentId: "unique()",
+        data: { targetId: $tid, targetType: "comment", userId: $uid },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  bob liked carol's comment"
+  fi
+fi
+
+# alice likes bob's first post
+if [[ -n "$POST_BOB" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_BOB" \
+    --arg uid "$U1" \
+    '{
+      documentId: "unique()",
+      data: { targetId: $tid, targetType: "post", userId: $uid },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  alice liked bob's post"
+
+  # carol likes bob's first post
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_BOB" \
+    --arg uid "$U3" \
+    '{
+      documentId: "unique()",
+      data: { targetId: $tid, targetType: "post", userId: $uid },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  carol liked bob's post"
+fi
+
+# alice and bob like carol's first post
+if [[ -n "$POST_CAROL" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_CAROL" \
+    --arg uid "$U1" \
+    '{
+      documentId: "unique()",
+      data: { targetId: $tid, targetType: "post", userId: $uid },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  alice liked carol's post"
+
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_CAROL" \
+    --arg uid "$U2" \
+    '{
+      documentId: "unique()",
+      data: { targetId: $tid, targetType: "post", userId: $uid },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  bob liked carol's post"
+fi
+
 # ── Done ───────────────────────────────────────────────────────────────────────
 echo ""
 info "✅  Seed complete."
 info "    Profiles : alice, bob, carol"
 info "    Posts    : up to 15 (8 text, 2 quote, 2 link, 3 photo)"
 info "    Follows  : 3"
+info "    Comments : up to 6 (including replies)"
+info "    Likes    : up to 8 (posts + comments)"
 echo ""
 warn "Note: seed profiles have fake user IDs and are read-only on the frontend."
 warn "Real users can sign up and will get their own profiles via ensureProfile()."

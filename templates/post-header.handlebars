@@ -6,6 +6,7 @@
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
   <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
@@ -19,6 +20,7 @@
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
   <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="{{excerpt content}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
@@ -37,6 +39,7 @@
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
   <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="{{linkUrl}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
@@ -49,6 +52,7 @@
     {{#each tags}}<a href="search.html?tag={{urlEncode this}}" class="tag">#{{this}}</a>{{/each}}
   </div>
   <div class="post-actions" style="margin-bottom:20px;">
+    <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
   </div>
