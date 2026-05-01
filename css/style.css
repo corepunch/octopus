@@ -286,6 +286,7 @@ a:hover { text-decoration: underline; }
   overflow-wrap: anywhere;
 }
 .post-card-title:hover { color: var(--color-accent); }
+.post-card-title--link { color: var(--color-accent); }
 
 .post-meta {
   color: var(--color-text-subtle);
