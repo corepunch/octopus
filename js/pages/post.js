@@ -146,6 +146,28 @@ async function toggleLike(btn, targetId, targetType) {
 // ── Comments ───────────────────────────────────────────────────────────────────
 
 /**
+ * Paginate through all like documents matching the given query filters.
+ * Appwrite's per-request limit is capped; this fetches every page until done.
+ * @param {Array} filters – array of Query.* expressions (no limit/cursor)
+ * @returns {Promise<Array>} all matching documents
+ */
+async function fetchAllLikePages(filters) {
+  const PAGE = 100;
+  const all  = [];
+  let   cursor = null;
+  do {
+    const queries = [...filters, Query.limit(PAGE)];
+    if (cursor) queries.push(Query.cursorAfter(cursor));
+    const res = await databases.listDocuments(APPWRITE_DB_ID, COL_LIKES, queries);
+    all.push(...res.documents);
+    cursor = res.documents.length === PAGE
+      ? res.documents[res.documents.length - 1].$id
+      : null;
+  } while (cursor);
+  return all;
+}
+
+/**
  * Load all comments for a post, group replies under their parents, and render.
  */
 async function loadComments(postId) {
@@ -183,26 +205,25 @@ async function loadComments(postId) {
     if (commentIds.length > 0) {
       // Appwrite Query.equal supports arrays of up to 100 values.
       // We already cap allComments at 100, so passing all IDs is safe.
+      // fetchAllLikePages paginates until every like document is retrieved.
+      const baseFilters = [
+        Query.equal('targetType', 'comment'),
+        Query.equal('targetId',   commentIds),
+      ];
       const [likeRes, userLikeRes] = await Promise.all([
-        databases.listDocuments(APPWRITE_DB_ID, COL_LIKES, [
-          Query.equal('targetType', 'comment'),
-          Query.equal('targetId',   commentIds),
-          Query.limit(500),
-        ]),
+        fetchAllLikePages(baseFilters),
         currentUser
-          ? databases.listDocuments(APPWRITE_DB_ID, COL_LIKES, [
-              Query.equal('targetType', 'comment'),
-              Query.equal('targetId',   commentIds),
-              Query.equal('userId',     currentUser.$id),
-              Query.limit(100),
+          ? fetchAllLikePages([
+              ...baseFilters,
+              Query.equal('userId', currentUser.$id),
             ])
-          : Promise.resolve({ documents: [] }),
+          : Promise.resolve([]),
       ]);
 
-      for (const like of likeRes.documents) {
+      for (const like of likeRes) {
         likeCounts[like.targetId] = (likeCounts[like.targetId] || 0) + 1;
       }
-      for (const like of userLikeRes.documents) {
+      for (const like of userLikeRes) {
         likedDocMap[like.targetId] = like.$id;
       }
     }
@@ -214,7 +235,7 @@ async function loadComments(postId) {
         authorId:   c.authorId,
         authorName: c.authorName,
         createdAt:  c.$createdAt,
-        body:       escapeHtml(c.body),
+        body:       c.body,
         likeCount:  likeCounts[c.$id] || 0,
         liked:      !!likedDocMap[c.$id],
         replies:    [],

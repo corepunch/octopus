@@ -381,13 +381,13 @@ aw POST "/databases/$DB_ID/collections/likes/indexes" "$(jq -n \
     orders:     ["ASC"]
   }')" >/dev/null
 
-# Prevent duplicate likes: one like per user per target
+# Prevent duplicate likes: one like per user per target type+id
 aw POST "/databases/$DB_ID/collections/likes/indexes" "$(jq -n \
   '{
     key:        "idx_likes_unique",
     type:       "unique",
-    attributes: ["userId","targetId"],
-    orders:     ["ASC","ASC"]
+    attributes: ["userId","targetType","targetId"],
+    orders:     ["ASC","ASC","ASC"]
   }')" >/dev/null
 
 info "Collection 'likes' done."
