@@ -1,0 +1,264 @@
+# =============================================================================
+# octopus-schema.yaml
+#
+# Declarative Appwrite database schema for the Octopus blogging platform.
+# Consumed by scripts/schema-parser.sh to provision the database via the
+# Appwrite REST API.
+#
+# To add a collection: append an entry to the `collections` array.
+# To add an attribute: append to the collection's `attributes` array.
+# To add an index:     append to the collection's `indexes` array.
+# To add a bucket:     append to the `storage` array.
+# =============================================================================
+
+version: "1"
+
+database:
+  id: "octopus-db"
+  name: "Octopus"
+
+collections:
+
+  # ── posts ──────────────────────────────────────────────────────────────────
+  - id: "posts"
+    name: "Posts"
+    documentSecurity: true
+    permissions:
+      - 'read("any")'
+      - 'create("users")'
+    attributes:
+      # title: optional — only used by text posts
+      - key: "title"
+        type: "string"
+        size: 256
+        required: false
+      # content: markdown body / quote text / photo caption / link description
+      - key: "content"
+        type: "string"
+        size: 65535
+        required: false
+      # authorId: Appwrite user $id
+      - key: "authorId"
+        type: "string"
+        size: 36
+        required: true
+      # authorName: display name at post time
+      - key: "authorName"
+        type: "string"
+        size: 128
+        required: true
+      # tags: up to 10 tags, each 64 chars
+      - key: "tags"
+        type: "string"
+        size: 64
+        required: false
+        array: true
+      # published: draft vs. published post
+      - key: "published"
+        type: "boolean"
+        required: false
+        default: true
+      # postType: "text" | "photo" | "quote" | "link"
+      - key: "postType"
+        type: "string"
+        size: 16
+        required: false
+        default: "text"
+      # imageId: Appwrite Storage file ID (photo posts)
+      - key: "imageId"
+        type: "string"
+        size: 36
+        required: false
+      # linkUrl: URL for link posts
+      - key: "linkUrl"
+        type: "string"
+        size: 2048
+        required: false
+      # quoteSource: attribution for quote posts
+      - key: "quoteSource"
+        type: "string"
+        size: 256
+        required: false
+      # userText: poster's optional opinion on a quote post
+      - key: "userText"
+        type: "string"
+        size: 2048
+        required: false
+    indexes:
+      # Full-text search on title
+      - key: "idx_title_ft"
+        type: "fulltext"
+        attributes: ["title"]
+        orders: ["ASC"]
+      # All posts by a given author
+      - key: "idx_author"
+        type: "key"
+        attributes: ["authorId"]
+        orders: ["ASC"]
+      # Filter published vs. draft posts
+      - key: "idx_published"
+        type: "key"
+        attributes: ["published"]
+        orders: ["ASC"]
+    # Note: Appwrite does not support indexes on array attributes (tags[]).
+    # Tag search uses Query.equal('tags', value) via a collection scan.
+
+  # ── follows ────────────────────────────────────────────────────────────────
+  - id: "follows"
+    name: "Follows"
+    documentSecurity: true
+    permissions:
+      - 'read("users")'
+      - 'create("users")'
+    attributes:
+      - key: "followerId"
+        type: "string"
+        size: 36
+        required: true
+      - key: "followingId"
+        type: "string"
+        size: 36
+        required: true
+    indexes:
+      # Who does a given user follow?
+      - key: "idx_follower"
+        type: "key"
+        attributes: ["followerId"]
+        orders: ["ASC"]
+      # Who follows a given user?
+      - key: "idx_following"
+        type: "key"
+        attributes: ["followingId"]
+        orders: ["ASC"]
+      # Prevent duplicate follows
+      - key: "idx_unique_follow"
+        type: "unique"
+        attributes: ["followerId", "followingId"]
+        orders: ["ASC", "ASC"]
+
+  # ── profiles ───────────────────────────────────────────────────────────────
+  - id: "profiles"
+    name: "Profiles"
+    documentSecurity: true
+    permissions:
+      - 'read("any")'
+      - 'create("users")'
+    attributes:
+      - key: "userId"
+        type: "string"
+        size: 36
+        required: true
+      - key: "username"
+        type: "string"
+        size: 128
+        required: true
+      - key: "bio"
+        type: "string"
+        size: 1024
+        required: false
+        default: ""
+    indexes:
+      # One profile per Appwrite user
+      - key: "idx_user_id_unique"
+        type: "unique"
+        attributes: ["userId"]
+        orders: ["ASC"]
+      # Full-text search on username
+      - key: "idx_username_ft"
+        type: "fulltext"
+        attributes: ["username"]
+        orders: ["ASC"]
+
+  # ── comments ───────────────────────────────────────────────────────────────
+  - id: "comments"
+    name: "Comments"
+    documentSecurity: true
+    permissions:
+      - 'read("any")'
+      - 'create("users")'
+    attributes:
+      # The post being commented on
+      - key: "postId"
+        type: "string"
+        size: 36
+        required: true
+      # Commenter's Appwrite user $id
+      - key: "authorId"
+        type: "string"
+        size: 36
+        required: true
+      # Display name at comment time
+      - key: "authorName"
+        type: "string"
+        size: 128
+        required: true
+      # Comment text (plain text, max 4096 chars)
+      - key: "body"
+        type: "string"
+        size: 4096
+        required: true
+      # Empty string for top-level; parent comment $id for replies
+      - key: "parentId"
+        type: "string"
+        size: 36
+        required: false
+        default: ""
+    indexes:
+      # All comments on a post
+      - key: "idx_comments_post"
+        type: "key"
+        attributes: ["postId"]
+        orders: ["ASC"]
+      # All replies under a parent comment
+      - key: "idx_comments_parent"
+        type: "key"
+        attributes: ["parentId"]
+        orders: ["ASC"]
+
+  # ── likes ──────────────────────────────────────────────────────────────────
+  - id: "likes"
+    name: "Likes"
+    documentSecurity: true
+    permissions:
+      - 'read("any")'
+      - 'create("users")'
+    attributes:
+      # The $id of the post or comment being liked
+      - key: "targetId"
+        type: "string"
+        size: 36
+        required: true
+      # "post" or "comment"
+      - key: "targetType"
+        type: "string"
+        size: 16
+        required: true
+      # The user who liked
+      - key: "userId"
+        type: "string"
+        size: 36
+        required: true
+    indexes:
+      # Count likes per post / comment
+      - key: "idx_likes_target"
+        type: "key"
+        attributes: ["targetId"]
+        orders: ["ASC"]
+      # One like per user per target type + id
+      - key: "idx_likes_unique"
+        type: "unique"
+        attributes: ["userId", "targetType", "targetId"]
+        orders: ["ASC", "ASC", "ASC"]
+
+storage:
+
+  # ── post-images ────────────────────────────────────────────────────────────
+  - id: "post-images"
+    name: "Post Images"
+    permissions:
+      - 'read("any")'
+      - 'create("users")'
+    fileSecurity: false
+    enabled: true
+    maximumFileSize: 10485760  # 10 MB
+    allowedFileExtensions: ["jpg", "jpeg", "png", "gif", "webp", "avif"]
