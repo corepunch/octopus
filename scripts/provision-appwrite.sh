@@ -452,8 +452,8 @@ fi
 # ── Done ───────────────────────────────────────────────────────────────────────
 echo ""
 info "✅  Appwrite schema provisioned successfully."
-info "    Database :  $DB_ID"
-info "    Collections: posts, follows, profiles, comments, likes"
-info "    Storage bucket: post-images"
+info "    Database    : $DB_ID"
+info "    Collections : posts, follows, profiles, comments, likes"
+info "    Storage     : post-images"
 info "    Web platform: $PAGES_HOSTNAME"
 echo ""
