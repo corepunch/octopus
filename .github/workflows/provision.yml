@@ -3,11 +3,13 @@ name: Provision Appwrite Schema
 on:
   # Run once manually from the Actions tab after adding APPWRITE_API_KEY to secrets
   workflow_dispatch:
-  # Also run automatically on the first push that changes the provision script
+  # Also run automatically on pushes that change the schema or provisioning scripts
   push:
     branches:
       - main
     paths:
+      - 'schemas/octopus-schema.yaml'
+      - 'scripts/schema-parser.sh'
       - 'scripts/provision-appwrite.sh'
 
 permissions:
@@ -21,8 +23,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install jq
-        run: sudo apt-get install -y jq
+      - name: Install dependencies (jq + yq)
+        run: |
+          sudo apt-get install -y jq
+          sudo wget -qO /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
 
       - name: Provision Appwrite schema
         env:
