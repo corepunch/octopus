@@ -748,7 +748,7 @@ if [[ -n "$QIMG2" ]]; then
         imageId:     $img,
         authorId:    $uid,
         authorName:  "bob",
-        tags:        ["quotes","programming","readability","craftmanship"],
+        tags:        ["quotes","programming","readability","craftsmanship"],
         published:   true
       },
       permissions: ["read(\"any\")"]

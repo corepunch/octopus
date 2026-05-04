@@ -810,7 +810,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, .55);
+  background: rgba(0,0,0,.55);
   border-radius: 6px;
 }
 .post-card-quote-bg-overlay {
@@ -824,7 +824,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   font-style: italic;
   line-height: 1.55;
   color: #fff;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, .5);
+  text-shadow: 0 1px 4px rgba(0,0,0,.5);
   margin: 0 0 8px;
   border: none;
   padding: 0;
@@ -833,7 +833,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .post-card-quote-bg-source {
   display: block;
   font-size: 13px;
-  color: rgba(255, 255, 255, .8);
+  color: rgba(255,255,255,.8);
   font-style: normal;
 }
 
@@ -896,7 +896,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, .55);
+  background: rgba(0,0,0,.55);
   border-radius: 8px;
 }
 .post-page-quote-bg-overlay {
@@ -910,7 +910,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   font-style: italic;
   line-height: 1.45;
   color: #fff;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, .5);
+  text-shadow: 0 2px 6px rgba(0,0,0,.5);
   margin: 0 0 12px;
   border: none;
   padding: 0;
@@ -919,7 +919,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .post-page-quote-bg-source {
   display: block;
   font-size: 16px;
-  color: rgba(255, 255, 255, .8);
+  color: rgba(255,255,255,.8);
   font-style: normal;
   margin-bottom: 20px;
 }
