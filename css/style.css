@@ -793,6 +793,50 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   font-style: normal;
 }
 
+/* ── Post card: quote with background image (card/meme) ─────── */
+.post-card-quote-bg-link { display: block; text-decoration: none; margin-bottom: 8px; }
+.post-card-quote-bg-link:hover { text-decoration: none; }
+.post-card-quote-bg {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  border-radius: 6px;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.post-card-quote-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .55);
+  border-radius: 6px;
+}
+.post-card-quote-bg-overlay {
+  position: relative;
+  z-index: 1;
+  padding: 22px 20px;
+  width: 100%;
+}
+.post-card-quote-bg-text {
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1.55;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, .5);
+  margin: 0 0 8px;
+  border: none;
+  padding: 0;
+  background: none;
+}
+.post-card-quote-bg-source {
+  display: block;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .8);
+  font-style: normal;
+}
+
 /* ── Post card: link ─────────────────────────────────────── */
 .post-card-link-url {
   display: inline-flex;
@@ -834,6 +878,50 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   padding-left: 30px;
   margin-bottom: 20px;
   font-style: normal;
+}
+
+/* ── Single-post view: quote with background image (card/meme) ─ */
+.post-page-quote-bg {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  margin: 20px 0 8px;
+}
+.post-page-quote-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .55);
+  border-radius: 8px;
+}
+.post-page-quote-bg-overlay {
+  position: relative;
+  z-index: 1;
+  padding: 40px 36px;
+  width: 100%;
+}
+.post-page-quote-bg-text {
+  font-size: 26px;
+  font-style: italic;
+  line-height: 1.45;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .5);
+  margin: 0 0 12px;
+  border: none;
+  padding: 0;
+  background: none;
+}
+.post-page-quote-bg-source {
+  display: block;
+  font-size: 16px;
+  color: rgba(255, 255, 255, .8);
+  font-style: normal;
+  margin-bottom: 20px;
 }
 
 /* ── Single-post view: link card ─────────────────────────── */

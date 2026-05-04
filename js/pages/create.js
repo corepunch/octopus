@@ -6,6 +6,9 @@ let createPostType = 'text';
 // Track the current photo preview object URL so it can be revoked when replaced.
 let photoPreviewUrl = null;
 
+// Track the current quote-image preview object URL so it can be revoked when replaced.
+let quoteImagePreviewUrl = null;
+
 // Sidebar tip copy per post type
 const TYPE_TIPS = {
   text: `<h3>Writing Tips</h3>
@@ -25,6 +28,7 @@ const TYPE_TIPS = {
 <ul class="tip-list">
   <li>Keep the quote concise and punchy</li>
   <li>Add the source: a person, book, or URL</li>
+  <li>Add a background photo to render the quote as a card</li>
   <li>Share your own opinion in "Your thoughts"</li>
 </ul>`,
   link: `<h3>Link Tips</h3>
@@ -89,6 +93,20 @@ async function initCreate() {
     wrap.style.display = 'block';
   });
 
+  // ── Quote image preview ───────────────────────────────────────────────────
+  document.getElementById('quote-image').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    if (quoteImagePreviewUrl) {
+      URL.revokeObjectURL(quoteImagePreviewUrl);
+    }
+    quoteImagePreviewUrl = URL.createObjectURL(file);
+    const wrap  = document.getElementById('quote-image-preview-wrap');
+    const imgEl = document.getElementById('quote-image-preview-img');
+    imgEl.src = quoteImagePreviewUrl;
+    wrap.style.display = 'block';
+  });
+
   // ── Form submit ──────────────────────────────────────────────────────────
   document.getElementById('create-form').addEventListener('submit', async e => {
     e.preventDefault();
@@ -122,6 +140,7 @@ async function initCreate() {
       docData.content     = quoteText;
       docData.quoteSource = quoteSource;
       if (userText) docData.userText = userText;
+      // imageId is uploaded after validation passes (below)
 
     } else if (createPostType === 'link') {
       const linkUrl = document.getElementById('link-url').value.trim();
@@ -149,6 +168,16 @@ async function initCreate() {
         docData.imageId  = uploaded.$id;
       }
 
+      if (createPostType === 'quote') {
+        const quoteImageInput = document.getElementById('quote-image');
+        if (quoteImageInput.files[0]) {
+          showAlert('alert', 'Compressing and uploading image…', 'info');
+          const compressed = await compressImage(quoteImageInput.files[0]);
+          const uploaded   = await storage.createFile(APPWRITE_BUCKET_ID, ID.unique(), compressed);
+          docData.imageId  = uploaded.$id;
+        }
+      }
+
       hideAlert('alert');
       const post = await databases.createDocument(APPWRITE_DB_ID, COL_POSTS, ID.unique(), docData);
       window.location.href = `post.html?id=${post.$id}`;
@@ -171,6 +200,14 @@ function switchType(type) {
     URL.revokeObjectURL(photoPreviewUrl);
     photoPreviewUrl = null;
     const wrap = document.getElementById('photo-preview-wrap');
+    if (wrap) wrap.style.display = 'none';
+  }
+
+  // Revoke quote image preview URL when switching away from quote type
+  if (type !== 'quote' && quoteImagePreviewUrl) {
+    URL.revokeObjectURL(quoteImagePreviewUrl);
+    quoteImagePreviewUrl = null;
+    const wrap = document.getElementById('quote-image-preview-wrap');
     if (wrap) wrap.style.display = 'none';
   }
 
