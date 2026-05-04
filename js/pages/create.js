@@ -98,7 +98,7 @@ async function initCreate() {
     const btn  = document.getElementById('btn-publish');
 
     // ── Validate first; button is not disabled until validation passes ───
-    let docData = { tags, authorId: user.$id, authorName: user.name, postType: createPostType };
+    let docData = { title: '', tags, authorId: user.$id, authorName: user.name, postType: createPostType };
 
     if (createPostType === 'text') {
       const title   = document.getElementById('title').value.trim();
