@@ -1,6 +1,9 @@
-name: Auto Post (Interest-Based News)
+name: Auto Post (AI-Powered Content Discovery)
 
 on:
+  # Run daily at 09:00 UTC (early morning Europe, late night US West Coast)
+  schedule:
+    - cron: '0 9 * * *'
   # Run manually from the Actions tab
   workflow_dispatch:
     inputs:
@@ -12,6 +15,7 @@ on:
 
 permissions:
   contents: read
+  models: read   # Required for GitHub Models AI access
 
 jobs:
   auto-post:
@@ -24,10 +28,11 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install -y jq
 
-      - name: Auto-post from interests
+      - name: Auto-post with AI content discovery
         env:
           APPWRITE_API_KEY:    ${{ secrets.APPWRITE_API_KEY }}
           APPWRITE_ENDPOINT:   "https://fra.cloud.appwrite.io/v1"
           APPWRITE_PROJECT_ID: "69f1c06800389dc6a1a0"
           POST_AS:             ${{ github.event.inputs.users }}
+          GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/auto-post.sh
