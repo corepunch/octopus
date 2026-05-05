@@ -136,6 +136,7 @@ a:hover { text-decoration: underline; }
   display: inline-flex;
   align-items: center;
   height: 100%;
+  margin-left: 12px;
 }
 .nav-logo:hover { text-decoration: none; color: var(--color-accent-soft); }
 
