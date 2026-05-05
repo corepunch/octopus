@@ -19,3 +19,6 @@ const COL_LIKES    = 'likes';
 
 // Storage bucket for post images (created by the provision script)
 const APPWRITE_BUCKET_ID = 'post-images';
+
+// Reposts collection (created by the provision script)
+const COL_REPOSTS = 'reposts';

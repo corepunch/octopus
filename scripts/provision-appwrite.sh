@@ -272,6 +272,8 @@ info "  → attributes…"
 attr profiles string "$(jq -n '{key:"userId",   size:36,   required:true}')"
 attr profiles string "$(jq -n '{key:"username", size:128,  required:true}')"
 attr profiles string "$(jq -n '{key:"bio",      size:1024, required:false, default:""}')"
+# interests: string[] – up to 20 topics (e.g. "technology", "design")
+attr profiles string "$(jq -n '{key:"interests", size:64, required:false, array:true}')"
 
 info "  → indexes…"
 wait_for_attrs profiles
