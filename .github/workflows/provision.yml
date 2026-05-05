@@ -27,7 +27,7 @@ jobs:
         run: |
           sudo apt-get install -y jq
           sudo wget -qO /usr/local/bin/yq \
-            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+            https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
       - name: Provision Appwrite schema

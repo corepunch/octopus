@@ -41,8 +41,10 @@ err_exit(){ echo -e "${RED}[!]${NC} $*" >&2; exit 1; }
 
 # ── Helper: Appwrite REST call ─────────────────────────────────────────────────
 # Usage: aw <method> <path> [body_json]
-# Exits non-zero on HTTP >= 400 (except 409 = already exists,
-# 403 = free-tier resource limit — both treated as idempotent success).
+# Exits non-zero on HTTP >= 400, except:
+#   409 – resource already exists (idempotent success)
+#   403 – only non-fatal when Appwrite indicates a plan/quota limit; all other
+#          403s (bad key, missing permissions) are treated as hard failures.
 aw() {
   local method="$1" path="$2" body="${3:-}"
   local args=(
@@ -57,14 +59,28 @@ aw() {
   local code; code=$(tail -n1 <<<"$raw")
   local resp; resp=$(sed '$d' <<<"$raw")
 
-  if [[ "$code" -ge 400 && "$code" -ne 409 && "$code" -ne 403 ]]; then
-    echo "$resp" | jq -r '.message // "unknown error"' >&2
+  if [[ "$code" -eq 409 ]]; then
+    echo "$resp"
+    return 0
+  fi
+  if [[ "$code" -ge 400 ]]; then
+    # Only treat 403 as non-fatal when Appwrite signals a plan/quota limit.
+    # Any other 403 (bad API key, wrong permissions) is a real failure.
+    if [[ "$code" -eq 403 ]]; then
+      local err_type; err_type=$(echo "$resp" | jq -r '.type // ""')
+      if [[ "$err_type" == *"plan"* || "$err_type" == *"limit"* ]]; then
+        warn "HTTP 403 (plan limit) – skipping $method $path"
+        echo "$resp"
+        return 0
+      fi
+    fi
+    jq -r '.message // "unknown error"' <<<"$resp" >&2
     err_exit "HTTP $code – $method $path"
   fi
   echo "$resp"
 }
 
-# ── Helper: create attribute, skip if 409 or 403 ──────────────────────────────
+# ── Helper: create attribute, skip if 409; 403 only skipped for plan limits ───
 # Usage: create_attr <collectionId> <type> <body_json>
 create_attr() {
   local col="$1" type="$2" body="$3"
@@ -76,7 +92,14 @@ create_attr() {
     -d "$body" \
     "$ENDPOINT/databases/$DB_ID/collections/$col/attributes/$type")
   local code; code=$(tail -n1 <<<"$raw")
-  if [[ "$code" -ge 400 && "$code" -ne 409 && "$code" -ne 403 ]]; then
+  if [[ "$code" -ge 400 && "$code" -ne 409 ]]; then
+    if [[ "$code" -eq 403 ]]; then
+      local err_type; err_type=$(sed '$d' <<<"$raw" | jq -r '.type // ""')
+      if [[ "$err_type" == *"plan"* || "$err_type" == *"limit"* ]]; then
+        warn "HTTP 403 (plan limit) – skipping $type attribute on $col"
+        return 0
+      fi
+    fi
     sed '$d' <<<"$raw" | jq -r '.message // empty' >&2
     err_exit "HTTP $code – creating $type attribute on $col"
   fi
@@ -95,8 +118,14 @@ wait_for_attrs() {
       "$ENDPOINT/databases/$DB_ID/collections/$col/attributes" \
       | jq -r '.attributes[].status' 2>/dev/null || echo "")
 
-    # All must be 'available'; none can be 'processing' or 'stuck'
-    if [[ -n "$statuses" ]] && ! grep -q -E 'processing|stuck' <<<"$statuses"; then
+    # Abort immediately if any attribute hit a failed state
+    if grep -qE '^(failed|error)$' <<<"$statuses" 2>/dev/null; then
+      err_exit "One or more attributes on '$col' entered a failed state"
+    fi
+    # All statuses must be exactly 'available'.
+    # grep -qv finds lines that do NOT match '^available$'; if none exist (exit 1),
+    # every line is available and we can proceed.
+    if [[ -n "$statuses" ]] && ! grep -qvE '^available$' <<<"$statuses"; then
       info "  → attributes ready."
       return 0
     fi

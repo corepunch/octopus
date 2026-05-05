@@ -25,6 +25,11 @@ ENDPOINT="${APPWRITE_ENDPOINT:-https://fra.cloud.appwrite.io/v1}"
 PROJECT="${APPWRITE_PROJECT_ID:-69f1c06800389dc6a1a0}"
 API_KEY="${APPWRITE_API_KEY:?APPWRITE_API_KEY is required}"
 
+# Export using the names schema-parser.sh expects, so the defaults set above
+# are visible to the child process even when the caller omitted them.
+export APPWRITE_ENDPOINT="$ENDPOINT"
+export APPWRITE_PROJECT_ID="$PROJECT"
+
 # Locate the schema and parser relative to this script's directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCHEMA_FILE="${SCRIPT_DIR}/../schemas/octopus-schema.yaml"
