@@ -132,13 +132,18 @@ a:hover { text-decoration: underline; }
 
 .nav-logo {
   color: var(--color-white);
-  font-size: 22px;
-  font-weight: bold;
-  font-style: italic;
-  letter-spacing: -0.5px;
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
 }
 .nav-logo:hover { text-decoration: none; color: var(--color-accent-soft); }
+
+.nav-logo-image {
+  display: block;
+  height: 28px;
+  width: auto;
+}
 
 .nav-links { display: flex; align-items: center; gap: 4px; }
 .nav-links a {
@@ -911,4 +916,3 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .comment-reply-form-wrap {
   margin-top: 10px;
 }
-

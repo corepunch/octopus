@@ -45,7 +45,9 @@
         <nav id="nav">
           <div class="nav-inner">
             <div class="nav-1">
-              <a class="nav-logo" href="index.html">🐙 Octopus</a>
+              <a class="nav-logo" href="index.html" aria-label="Octopus">
+                <img class="nav-logo-image" src="css/logo.png" alt="Octopus"/>
+              </a>
             </div>
             <div class="nav-2" id="nav-center">
               <xsl:for-each select="nav-center/node()">
