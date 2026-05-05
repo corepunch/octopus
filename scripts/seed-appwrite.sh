@@ -3,11 +3,18 @@
 # seed-appwrite.sh
 #
 # Populates (or re-seeds) the Octopus Appwrite database with sample data:
-#   • 3 guest user profiles (no real auth accounts needed for seed data)
-#   • 6 sample posts spread across those profiles
-#   • 3 follow relationships
+#   • 3 seed user profiles with interests (alice, bob, carol)
+#   • 15 text/quote/link posts
+#   • 18 photo posts (uploaded from picsum.photos)
+#   • 10 photo quote posts (quotes with background images, card/meme style)
+#   • 5 follow relationships
+#   • ~45 comments with replies (text, photo-quote, and photo posts)
+#   • Likes on posts and comments
+#   • Reposts across users
 #
 # Run with --reset to wipe all existing documents first (destructive!).
+# Note: Appwrite sets $createdAt automatically; run with --reset to get fresh
+# timestamps on all posts.
 #
 # Required environment variables:
 #   APPWRITE_API_KEY    – server-side API key (stored in GitHub Secrets)
@@ -148,6 +155,7 @@ upload_photo() {
 # ── Optional reset ────────────────────────────────────────────────────────────
 if $RESET; then
   warn "⚠️  RESET MODE – deleting all existing documents and files…"
+  delete_all reposts
   delete_all likes
   delete_all comments
   delete_all follows
@@ -177,9 +185,10 @@ aw POST "/databases/$DB_ID/collections/profiles/documents" "$(jq -n \
   '{
     documentId: $id,
     data: {
-      userId:   $uid,
-      username: "alice",
-      bio:      "Writer, thinker, Octopus early adopter. I write about tech and culture."
+      userId:    $uid,
+      username:  "alice",
+      bio:       "Writer, thinker, Octopus early adopter. I write about tech and culture.",
+      interests: ["writing","technology","productivity","books","philosophy","science","film"]
     },
     permissions: ["read(\"any\")"]
   }')" >/dev/null && info "  alice"
@@ -190,9 +199,10 @@ aw POST "/databases/$DB_ID/collections/profiles/documents" "$(jq -n \
   '{
     documentId: $id,
     data: {
-      userId:   $uid,
-      username: "bob",
-      bio:      "Open-source contributor. Mainly writing about software and craft."
+      userId:    $uid,
+      username:  "bob",
+      bio:       "Open-source contributor. Mainly writing about software and craft.",
+      interests: ["programming","open-source","technology","web-development","ai","startups","productivity"]
     },
     permissions: ["read(\"any\")"]
   }')" >/dev/null && info "  bob"
@@ -203,9 +213,10 @@ aw POST "/databases/$DB_ID/collections/profiles/documents" "$(jq -n \
   '{
     documentId: $id,
     data: {
-      userId:   $uid,
-      username: "carol",
-      bio:      "Product designer and occasional essayist. Based in Berlin."
+      userId:    $uid,
+      username:  "carol",
+      bio:       "Product designer and occasional essayist. Based in Berlin.",
+      interests: ["design","photography","art","architecture","film","travel","music"]
     },
     permissions: ["read(\"any\")"]
   }')" >/dev/null && info "  carol"
@@ -313,6 +324,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:       "On simplicity",
       content:     "Simplicity is the ultimate sophistication.",
       postType:    "quote",
       quoteSource: "Leonardo da Vinci",
@@ -331,6 +343,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:    "Appwrite documentation",
       content: "The official Appwrite documentation is surprisingly readable. Highly recommended for anyone building a BaaS-powered static site.",
       postType: "link",
       linkUrl:  "https://appwrite.io/docs",
@@ -348,6 +361,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:       "Good design is invisible",
       content:     "Good design, when done well, should be invisible. It is only when it is done poorly that we notice it.",
       postType:    "quote",
       quoteSource: "Jony Ive",
@@ -366,6 +380,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:    "Markdown Guide",
       content: "A free and open-source reference guide that explains how to use Markdown. Essential reading for any technical writer.",
       postType: "link",
       linkUrl:  "https://www.markdownguide.org",
@@ -383,6 +398,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:       "On readable code",
       content:     "Programs must be written for people to read, and only incidentally for machines to execute.",
       postType:    "quote",
       quoteSource: "Harold Abelson",
@@ -401,6 +417,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:       "On starting",
       content:     "The scariest moment is always just before you start.",
       postType:    "quote",
       quoteSource: "Stephen King",
@@ -459,11 +476,9 @@ if [[ -n "$IMG1" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Morning light",
         content:    "Golden hour on a quiet trail. Some mornings the world just looks right.",
         postType:   "photo",
-        imageId:    $img,
-        authorId:   $uid,
-        authorName: "alice",
         tags:       ["photography","nature","morning"],
         published:  true
       },
@@ -480,6 +495,7 @@ if [[ -n "$IMG2" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "City geometry",
         content:    "Lines and angles everywhere. Urban spaces have a visual logic of their own.",
         postType:   "photo",
         imageId:    $img,
@@ -501,6 +517,7 @@ if [[ -n "$IMG3" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Texture study",
         content:    "Close-up surfaces reveal a whole other world of colour and form.",
         postType:   "photo",
         imageId:    $img,
@@ -522,6 +539,7 @@ if [[ -n "$IMG4" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Ocean calm",
         content:    "There is something about open water that resets the mind completely. Stood here for half an hour and felt all the noise drain away.",
         postType:   "photo",
         imageId:    $img,
@@ -543,6 +561,7 @@ if [[ -n "$IMG5" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Workspace",
         content:    "The desk where most of this blog gets written. Minimal on purpose — distractions are the enemy of deep work.",
         postType:   "photo",
         imageId:    $img,
@@ -564,6 +583,7 @@ if [[ -n "$IMG6" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Street scene",
         content:    "Street photography teaches you to see the world differently. Every corner is a composition waiting to be noticed.",
         postType:   "photo",
         imageId:    $img,
@@ -585,6 +605,7 @@ if [[ -n "$IMG7" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Forest light",
         content:    "Late autumn light through the trees. This is why I always carry a camera.",
         postType:   "photo",
         imageId:    $img,
@@ -606,6 +627,7 @@ if [[ -n "$IMG8" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Night city",
         content:    "Cities come alive after dark. Long exposures turn headlights into rivers of light.",
         postType:   "photo",
         imageId:    $img,
@@ -627,6 +649,7 @@ if [[ -n "$IMG9" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Minimalist interior",
         content:    "Negative space is not empty — it is breathing room. This room gets it exactly right.",
         postType:   "photo",
         imageId:    $img,
@@ -639,7 +662,393 @@ if [[ -n "$IMG9" ]]; then
     }')" >/dev/null && info "  photo post: Minimalist interior (carol)"
 fi
 
-# ── 4. Follows ────────────────────────────────────────────────────────────────
+# alice – mountain / landscape
+IMG10=$(upload_photo "https://picsum.photos/seed/octopus-mountain/1200/800")
+if [[ -n "$IMG10" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U1" \
+    --arg img "$IMG10" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:      "Mountain perspective",
+        content:    "Sometimes the only way to gain perspective is to get higher up. Cleared my head completely.",
+        postType:   "photo",
+        imageId:    $img,
+        authorId:   $uid,
+        authorName: "alice",
+        tags:       ["photography","mountains","hiking","perspective"],
+        published:  true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo post: Mountain perspective (alice)"
+fi
+
+# bob – rain / window
+IMG11=$(upload_photo "https://picsum.photos/seed/octopus-rain/1200/800")
+if [[ -n "$IMG11" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U2" \
+    --arg img "$IMG11" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:      "Rainy day",
+        content:    "Rainy days are underrated for deep work. The sound alone is worth the grey skies.",
+        postType:   "photo",
+        imageId:    $img,
+        authorId:   $uid,
+        authorName: "bob",
+        tags:       ["photography","rain","mood","deepwork"],
+        published:  true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo post: Rainy day (bob)"
+fi
+
+# carol – flowers / macro
+IMG12=$(upload_photo "https://picsum.photos/seed/octopus-flowers/1200/800")
+if [[ -n "$IMG12" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U3" \
+    --arg img "$IMG12" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:      "Macro flowers",
+        content:    "Macro photography changed how I see everyday objects. At this scale, ordinary things become extraordinary.",
+        postType:   "photo",
+        imageId:    $img,
+        authorId:   $uid,
+        authorName: "carol",
+        tags:       ["photography","macro","flowers","detail"],
+        published:  true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo post: Macro flowers (carol)"
+fi
+
+# alice – café / coffee
+IMG13=$(upload_photo "https://picsum.photos/seed/octopus-cafe/1200/800")
+if [[ -n "$IMG13" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U1" \
+    --arg img "$IMG13" \
+    '{
+      documentId: "unique()",
+      data: {
+        content:    "The best ideas come with a good cup of coffee and no agenda.",
+        postType:   "photo",
+        imageId:    $img,
+        authorId:   $uid,
+        authorName: "alice",
+        tags:       ["photography","coffee","cafe","writing"],
+        published:  true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo post: Café (alice)"
+fi
+
+# bob – tech / keyboard
+IMG14=$(upload_photo "https://picsum.photos/seed/octopus-keyboard/1200/800")
+if [[ -n "$IMG14" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U2" \
+    --arg img "$IMG14" \
+    '{
+      documentId: "unique()",
+      data: {
+        content:    "Still using a mechanical keyboard from 2015. Some tools just work.",
+        postType:   "photo",
+        imageId:    $img,
+        authorId:   $uid,
+        authorName: "bob",
+        tags:       ["photography","tech","keyboard","tools"],
+        published:  true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo post: Keyboard (bob)"
+fi
+
+# carol – museum / art
+IMG15=$(upload_photo "https://picsum.photos/seed/octopus-museum/1200/800")
+if [[ -n "$IMG15" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U3" \
+    --arg img "$IMG15" \
+    '{
+      documentId: "unique()",
+      data: {
+        content:    "Standing in front of a painting for twenty minutes. Slow looking changes everything.",
+        postType:   "photo",
+        imageId:    $img,
+        authorId:   $uid,
+        authorName: "carol",
+        tags:       ["photography","museum","art","slowlooking"],
+        published:  true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo post: Museum (carol)"
+fi
+
+# alice – winter / snow
+IMG16=$(upload_photo "https://picsum.photos/seed/octopus-winter/1200/800")
+if [[ -n "$IMG16" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U1" \
+    --arg img "$IMG16" \
+    '{
+      documentId: "unique()",
+      data: {
+        content:    "Winter light is unlike anything else. Everything quieter, sharper, cleaner.",
+        postType:   "photo",
+        imageId:    $img,
+        authorId:   $uid,
+        authorName: "alice",
+        tags:       ["photography","winter","light","nature"],
+        published:  true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo post: Winter light (alice)"
+fi
+
+# bob – sunset / rooftop
+IMG17=$(upload_photo "https://picsum.photos/seed/octopus-rooftop/1200/800")
+if [[ -n "$IMG17" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U2" \
+    --arg img "$IMG17" \
+    '{
+      documentId: "unique()",
+      data: {
+        content:    "Caught the sunset from the roof. The city pauses for about five minutes every evening if you know where to look.",
+        postType:   "photo",
+        imageId:    $img,
+        authorId:   $uid,
+        authorName: "bob",
+        tags:       ["photography","sunset","city","rooftop"],
+        published:  true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo post: Rooftop sunset (bob)"
+fi
+
+# ── 4. Photo quote posts (quote text overlaid on a background image) ──────────
+info "Uploading photo quote posts…"
+
+# alice – inspirational quote on a nature background
+QIMG1=$(upload_photo "https://picsum.photos/seed/octopus-q1/1200/800")
+if [[ -n "$QIMG1" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U1" \
+    --arg img "$QIMG1" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:       "Not all those who wander are lost",
+        content:     "Not all those who wander are lost.",
+        postType:    "quote",
+        quoteSource: "J.R.R. Tolkien",
+        userText:    "A reminder I keep coming back to whenever I feel like I am drifting. Sometimes the long way round is the right way.",
+        imageId:     $img,
+        authorId:    $uid,
+        authorName:  "alice",
+        tags:        ["quotes","tolkien","wandering","inspiration"],
+        published:   true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo-quote: Tolkien – Not all those who wander (alice)"
+fi
+
+# bob – programming quote on a dark code background
+QIMG2=$(upload_photo "https://picsum.photos/seed/octopus-q2/1200/800")
+if [[ -n "$QIMG2" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U2" \
+    --arg img "$QIMG2" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:       "Human-readable code",
+        content:     "Any fool can write code that a computer can understand. Good programmers write code that humans can understand.",
+        postType:    "quote",
+        quoteSource: "Martin Fowler",
+        userText:    "I have read this quote a hundred times and it still hits. Code is communication first, instruction second.",
+        imageId:     $img,
+        authorId:    $uid,
+        authorName:  "bob",
+        tags:        ["quotes","programming","readability","craftsmanship"],
+        published:   true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo-quote: Fowler – Human-readable code (bob)"
+fi
+
+# carol – design quote on a minimal background
+QIMG3=$(upload_photo "https://picsum.photos/seed/octopus-q3/1200/800")
+if [[ -n "$QIMG3" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U3" \
+    --arg img "$QIMG3" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:       "Design is how it works",
+        content:     "Design is not just what it looks like and feels like. Design is how it works.",
+        postType:    "quote",
+        quoteSource: "Steve Jobs",
+        userText:    "Function and form are not opponents — they reinforce each other. The best products I have used made this feel effortless.",
+        imageId:     $img,
+        authorId:    $uid,
+        authorName:  "carol",
+        tags:        ["quotes","design","stevejobs","ux"],
+        published:   true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo-quote: Jobs – Design is how it works (carol)"
+fi
+
+# alice – writing quote on a cosy reading background
+QIMG4=$(upload_photo "https://picsum.photos/seed/octopus-q4/1200/800")
+if [[ -n "$QIMG4" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U1" \
+    --arg img "$QIMG4" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:       "Sit down and bleed",
+        content:     "There is nothing to writing. All you do is sit down at a typewriter and bleed.",
+        postType:    "quote",
+        quoteSource: "Ernest Hemingway",
+        userText:    "Still the most honest description of the writing process I have ever read.",
+        imageId:     $img,
+        authorId:    $uid,
+        authorName:  "alice",
+        tags:        ["quotes","writing","hemingway","creativity"],
+        published:   true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo-quote: Hemingway – Sit down and bleed (alice)"
+fi
+
+# bob – philosophy quote on a moody landscape
+QIMG5=$(upload_photo "https://picsum.photos/seed/octopus-q5/1200/800")
+if [[ -n "$QIMG5" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U2" \
+    --arg img "$QIMG5" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:       "Love what you do",
+        content:     "The only way to do great work is to love what you do.",
+        postType:    "quote",
+        quoteSource: "Steve Jobs",
+        imageId:     $img,
+        authorId:    $uid,
+        authorName:  "bob",
+        tags:        ["quotes","work","passion","stevejobs"],
+        published:   true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo-quote: Jobs – Love what you do (bob)"
+fi
+
+# carol – architecture quote on an urban photo
+QIMG6=$(upload_photo "https://picsum.photos/seed/octopus-q6/1200/800")
+if [[ -n "$QIMG6" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U3" \
+    --arg img "$QIMG6" \
+    '{
+      documentId: "unique()",
+      data: {
+        title:       "Forms assembled in the light",
+        content:     "Architecture is the learned game, correct and magnificent, of forms assembled in the light.",
+        postType:    "quote",
+        quoteSource: "Le Corbusier",
+        userText:    "What I love about this quote is how it treats architecture as both craft and play. A city that gets it right does the same to a pedestrian.",
+        imageId:     $img,
+        authorId:    $uid,
+        authorName:  "carol",
+        tags:        ["quotes","architecture","design","lecorbusier"],
+        published:   true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo-quote: Le Corbusier – Forms in the light (carol)"
+fi
+
+# alice – nature-themed motivational quote
+QIMG7=$(upload_photo "https://picsum.photos/seed/octopus-q7/1200/800")
+if [[ -n "$QIMG7" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U1" \
+    --arg img "$QIMG7" \
+    '{
+      documentId: "unique()",
+      data: {
+        content:     "In the middle of every difficulty lies opportunity.",
+        postType:    "quote",
+        quoteSource: "Albert Einstein",
+        userText:    "A quote I keep on my desk. The best ideas I have had all started as problems I could not solve.",
+        imageId:     $img,
+        authorId:    $uid,
+        authorName:  "alice",
+        tags:        ["quotes","mindset","einstein","motivation"],
+        published:   true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo-quote: Einstein – Difficulty (alice)"
+fi
+
+# bob – tech / simplicity quote
+QIMG8=$(upload_photo "https://picsum.photos/seed/octopus-q8/1200/800")
+if [[ -n "$QIMG8" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U2" \
+    --arg img "$QIMG8" \
+    '{
+      documentId: "unique()",
+      data: {
+        content:     "Perfection is achieved not when there is nothing more to add, but when there is nothing left to take away.",
+        postType:    "quote",
+        quoteSource: "Antoine de Saint-Exupéry",
+        userText:    "The best code review comment I ever received was a deletion. A whole function, gone. The feature still worked.",
+        imageId:     $img,
+        authorId:    $uid,
+        authorName:  "bob",
+        tags:        ["quotes","programming","simplicity","craftsmanship"],
+        published:   true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo-quote: Saint-Exupéry – Perfection (bob)"
+fi
+
+# carol – art / creativity quote
+QIMG9=$(upload_photo "https://picsum.photos/seed/octopus-q9/1200/800")
+if [[ -n "$QIMG9" ]]; then
+  aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
+    --arg uid "$U3" \
+    --arg img "$QIMG9" \
+    '{
+      documentId: "unique()",
+      data: {
+        content:     "Creativity is intelligence having fun.",
+        postType:    "quote",
+        quoteSource: "Albert Einstein",
+        userText:    "The best design sessions feel like play. The moment it starts feeling like work, I take a walk.",
+        imageId:     $img,
+        authorId:    $uid,
+        authorName:  "carol",
+        tags:        ["quotes","creativity","design","einstein"],
+        published:   true
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  photo-quote: Einstein – Creativity (carol)"
+fi
+
+# ── 5. Follows ────────────────────────────────────────────────────────────────
 info "Creating follow relationships…"
 
 # bob follows alice
@@ -672,7 +1081,17 @@ aw POST "/databases/$DB_ID/collections/follows/documents" "$(jq -n \
     permissions: ["read(\"users\")"]
   }')" >/dev/null && info "  alice → carol"
 
-# ── 5. Fetch post IDs for comment & like seeds ────────────────────────────────
+# alice follows bob
+aw POST "/databases/$DB_ID/collections/follows/documents" "$(jq -n \
+  --arg frid "$U1" \
+  --arg fgid "$U2" \
+  '{
+    documentId: "unique()",
+    data: { followerId: $frid, followingId: $fgid },
+    permissions: ["read(\"users\")"]
+  }')" >/dev/null && info "  alice → bob"
+
+# ── 6. Fetch post IDs for comment & like seeds ────────────────────────────────
 info "Fetching post IDs for comment/like seed data…"
 
 # Grab first and second post for each seed author (ordered by creation time)
@@ -685,8 +1104,8 @@ POST_ALICE=$(curl -s \
 POST_ALICE2=$(curl -s \
   -H "X-Appwrite-Key: $API_KEY" \
   -H "X-Appwrite-Project: $PROJECT" \
-  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U1%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)&queries[]=offset(1)" \
-  | jq -r '.documents[0]."$id" // empty')
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U1%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(2)" \
+  | jq -r '.documents[1]."$id" // empty')
 
 POST_BOB=$(curl -s \
   -H "X-Appwrite-Key: $API_KEY" \
@@ -697,8 +1116,8 @@ POST_BOB=$(curl -s \
 POST_BOB2=$(curl -s \
   -H "X-Appwrite-Key: $API_KEY" \
   -H "X-Appwrite-Project: $PROJECT" \
-  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U2%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)&queries[]=offset(1)" \
-  | jq -r '.documents[0]."$id" // empty')
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U2%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(2)" \
+  | jq -r '.documents[1]."$id" // empty')
 
 POST_CAROL=$(curl -s \
   -H "X-Appwrite-Key: $API_KEY" \
@@ -709,8 +1128,8 @@ POST_CAROL=$(curl -s \
 POST_CAROL2=$(curl -s \
   -H "X-Appwrite-Key: $API_KEY" \
   -H "X-Appwrite-Project: $PROJECT" \
-  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U3%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)&queries[]=offset(1)" \
-  | jq -r '.documents[0]."$id" // empty')
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U3%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(2)" \
+  | jq -r '.documents[1]."$id" // empty')
 
 info "  alice post 1 : ${POST_ALICE:-<not found>}"
 info "  alice post 2 : ${POST_ALICE2:-<not found>}"
@@ -719,7 +1138,29 @@ info "  bob   post 2 : ${POST_BOB2:-<not found>}"
 info "  carol post 1 : ${POST_CAROL:-<not found>}"
 info "  carol post 2 : ${POST_CAROL2:-<not found>}"
 
-# ── 6. Comments ───────────────────────────────────────────────────────────────
+POST_ALICE_PHOTO=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U1%22)&queries[]=equal(%22postType%22,%22photo%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+POST_BOB_PHOTO=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U2%22)&queries[]=equal(%22postType%22,%22photo%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+POST_CAROL_PHOTO=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U3%22)&queries[]=equal(%22postType%22,%22photo%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+info "  alice photo  : ${POST_ALICE_PHOTO:-<not found>}"
+info "  bob   photo  : ${POST_BOB_PHOTO:-<not found>}"
+info "  carol photo  : ${POST_CAROL_PHOTO:-<not found>}"
+
+# ── 7. Comments ───────────────────────────────────────────────────────────────
 info "Creating comments…"
 
 # bob comments on alice's first post (top-level)
@@ -918,7 +1359,380 @@ if [[ -n "$POST_CAROL2" ]]; then
     }')" >/dev/null && info "  bob → carol post 2"
 fi
 
-# ── 7. Likes ──────────────────────────────────────────────────────────────────
+# ── Additional comments on photo-quote posts ──────────────────────────────────
+
+# Grab the first photo-quote post by alice (Tolkien quote) and add comments
+POST_ALICE_QIMG=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U1%22)&queries[]=equal(%22postType%22,%22quote%22)&queries[]=orderDesc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+if [[ -n "$POST_ALICE_QIMG" ]]; then
+  # carol comments on alice's photo-quote post
+  C_QA=$(aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_ALICE_QIMG" \
+    --arg uid "$U3" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "carol",
+        body:       "This quote lives rent-free in my head. The background image makes it hit even harder.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" | jq -r '."$id"') && info "  carol → alice photo-quote"
+
+  # bob replies to carol
+  if [[ -n "$C_QA" ]]; then
+    aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+      --arg pid "$POST_ALICE_QIMG" \
+      --arg uid "$U2" \
+      --arg par "$C_QA" \
+      '{
+        documentId: "unique()",
+        data: {
+          postId:     $pid,
+          authorId:   $uid,
+          authorName: "bob",
+          body:       "Agreed, the image really gives it weight. Words + photo together do something neither does alone.",
+          parentId:   $par
+        },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  bob replies to carol on alice photo-quote"
+  fi
+fi
+
+# Grab the first photo-quote post by bob (Fowler quote) and add a comment from alice
+POST_BOB_QIMG=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U2%22)&queries[]=equal(%22postType%22,%22quote%22)&queries[]=orderDesc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+if [[ -n "$POST_BOB_QIMG" ]]; then
+  # alice comments on bob's photo-quote
+  aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_BOB_QIMG" \
+    --arg uid "$U1" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "alice",
+        body:       "I print this one out and put it on my wall every time I start a new project. Never gets old.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  alice → bob photo-quote"
+
+  # carol also comments
+  aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_BOB_QIMG" \
+    --arg uid "$U3" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "carol",
+        body:       "The line between readable code and good design is thinner than most engineers admit.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  carol → bob photo-quote"
+fi
+
+# Grab the first photo-quote post by carol (Jobs quote) and add comments
+POST_CAROL_QIMG=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U3%22)&queries[]=equal(%22postType%22,%22quote%22)&queries[]=orderDesc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+if [[ -n "$POST_CAROL_QIMG" ]]; then
+  # bob comments on carol's photo-quote
+  C_QC=$(aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_CAROL_QIMG" \
+    --arg uid "$U2" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "bob",
+        body:       "This is the quote I send to every client who tries to separate UX from engineering.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" | jq -r '."$id"') && info "  bob → carol photo-quote"
+
+  # alice replies
+  if [[ -n "$C_QC" ]]; then
+    aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+      --arg pid "$POST_CAROL_QIMG" \
+      --arg uid "$U1" \
+      --arg par "$C_QC" \
+      '{
+        documentId: "unique()",
+        data: {
+          postId:     $pid,
+          authorId:   $uid,
+          authorName: "alice",
+          body:       "Ha, I have done the same. Usually gets a very quiet room.",
+          parentId:   $par
+        },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  alice replies to bob on carol photo-quote"
+  fi
+fi
+# ── Additional comments on photo posts ────────────────────────────────────────
+
+# carol and bob comment on alice's first photo post
+if [[ -n "$POST_ALICE_PHOTO" ]]; then
+  aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_ALICE_PHOTO" \
+    --arg uid "$U3" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "carol",
+        body:       "That golden light is everything. What time was this taken?",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  carol → alice photo"
+
+  aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_ALICE_PHOTO" \
+    --arg uid "$U2" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "bob",
+        body:       "Stunning. This kind of morning light makes getting up early worth it.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  bob → alice photo"
+fi
+
+# alice and carol comment on bob's first photo post
+if [[ -n "$POST_BOB_PHOTO" ]]; then
+  C_BP=$(aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_BOB_PHOTO" \
+    --arg uid "$U3" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "carol",
+        body:       "The geometry in this is fantastic — very Mondrian. Did you edit or is this straight out of camera?",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" | jq -r '."$id"') && info "  carol → bob photo"
+
+  if [[ -n "$C_BP" ]]; then
+    aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+      --arg pid "$POST_BOB_PHOTO" \
+      --arg uid "$U1" \
+      --arg par "$C_BP" \
+      '{
+        documentId: "unique()",
+        data: {
+          postId:     $pid,
+          authorId:   $uid,
+          authorName: "alice",
+          body:       "Agree with carol — the lines are incredible. I would frame this.",
+          parentId:   $par
+        },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  alice replies to carol on bob photo"
+  fi
+fi
+
+# alice and bob comment on carol's first photo post
+if [[ -n "$POST_CAROL_PHOTO" ]]; then
+  C_CP=$(aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_CAROL_PHOTO" \
+    --arg uid "$U1" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "alice",
+        body:       "Close-up shots like this are what got me into photography. There is a whole world hiding in plain sight.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" | jq -r '."$id"') && info "  alice → carol photo"
+
+  if [[ -n "$C_CP" ]]; then
+    aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+      --arg pid "$POST_CAROL_PHOTO" \
+      --arg uid "$U2" \
+      --arg par "$C_CP" \
+      '{
+        documentId: "unique()",
+        data: {
+          postId:     $pid,
+          authorId:   $uid,
+          authorName: "bob",
+          body:       "Totally. I never appreciated texture photography until I tried it — it is harder than it looks.",
+          parentId:   $par
+        },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  bob replies to alice on carol photo"
+  fi
+fi
+
+# ── More extended comments on text posts ─────────────────────────────────────
+
+info "Creating extended comments on text posts…"
+
+# bob's open-source post (bob = U2, first text post by $U2)
+POST_BOB_OS=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U2%22)&queries[]=equal(%22postType%22,%22text%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+if [[ -n "$POST_BOB_OS" ]]; then
+  C_OS=$(aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_BOB_OS" \
+    --arg uid "$U1" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "alice",
+        body:       "The \"fix it and share it\" loop is so real. I contributed my first patch because I was annoyed at a bug, and now I maintain two packages.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" | jq -r '."$id"') && info "  alice → bob open-source post"
+
+  if [[ -n "$C_OS" ]]; then
+    aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+      --arg pid "$POST_BOB_OS" \
+      --arg uid "$U3" \
+      --arg par "$C_OS" \
+      '{
+        documentId: "unique()",
+        data: {
+          postId:     $pid,
+          authorId:   $uid,
+          authorName: "carol",
+          body:       "Same story for me with a design tool. One small PR turned into a year of collaboration.",
+          parentId:   $par
+        },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  carol replies to alice on open-source post"
+
+    aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+      --arg pid "$POST_BOB_OS" \
+      --arg uid "$U2" \
+      --arg par "$C_OS" \
+      '{
+        documentId: "unique()",
+        data: {
+          postId:     $pid,
+          authorId:   $uid,
+          authorName: "bob",
+          body:       "That is exactly how it starts. And then suddenly you care more about the project than your own side projects.",
+          parentId:   $par
+        },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  bob replies to alice on open-source post"
+  fi
+fi
+
+# carol's colour contrast post
+POST_CAROL_CC=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U3%22)&queries[]=equal(%22postType%22,%22text%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+if [[ -n "$POST_CAROL_CC" ]]; then
+  C_CC=$(aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_CAROL_CC" \
+    --arg uid "$U2" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "bob",
+        body:       "I had no idea about the 4.5:1 ratio until I read this. Going to audit my portfolio site this weekend.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" | jq -r '."$id"') && info "  bob → carol colour contrast"
+
+  aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_CAROL_CC" \
+    --arg uid "$U1" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "alice",
+        body:       "The greyscale test tip is genius. I have been using it ever since I read about it.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  alice → carol colour contrast"
+
+  if [[ -n "$C_CC" ]]; then
+    aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+      --arg pid "$POST_CAROL_CC" \
+      --arg uid "$U3" \
+      --arg par "$C_CC" \
+      '{
+        documentId: "unique()",
+        data: {
+          postId:     $pid,
+          authorId:   $uid,
+          authorName: "carol",
+          body:       "The WebAIM checker is also great for real-time feedback. Let me know what you find on your audit!",
+          parentId:   $par
+        },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  carol replies to bob on colour contrast"
+  fi
+fi
+
+# More comments on alice's markdown post
+if [[ -n "$POST_ALICE2" ]]; then
+  aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_ALICE2" \
+    --arg uid "$U2" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "bob",
+        body:       "Git-backed plain text is also the best version history for writing. I track my blog posts the same way as code.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  bob → alice markdown post 2"
+fi
+
 info "Creating likes…"
 
 # bob likes alice's first post
@@ -1032,14 +1846,134 @@ if [[ -n "$POST_CAROL2" ]]; then
     }')" >/dev/null && info "  bob liked carol's second post"
 fi
 
+# Likes on photo posts
+if [[ -n "$POST_ALICE_PHOTO" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_ALICE_PHOTO" --arg uid "$U2" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob liked alice's photo"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_ALICE_PHOTO" --arg uid "$U3" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol liked alice's photo"
+fi
+
+if [[ -n "$POST_BOB_PHOTO" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_BOB_PHOTO" --arg uid "$U1" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice liked bob's photo"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_BOB_PHOTO" --arg uid "$U3" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol liked bob's photo"
+fi
+
+if [[ -n "$POST_CAROL_PHOTO" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_CAROL_PHOTO" --arg uid "$U1" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice liked carol's photo"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_CAROL_PHOTO" --arg uid "$U2" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob liked carol's photo"
+fi
+
+# Likes on photo-quote posts
+if [[ -n "${POST_ALICE_QIMG:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_ALICE_QIMG" --arg uid "$U2" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob liked alice's photo-quote"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_ALICE_QIMG" --arg uid "$U3" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol liked alice's photo-quote"
+fi
+
+if [[ -n "${POST_BOB_QIMG:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_BOB_QIMG" --arg uid "$U1" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice liked bob's photo-quote"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_BOB_QIMG" --arg uid "$U3" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol liked bob's photo-quote"
+fi
+
+if [[ -n "${POST_CAROL_QIMG:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_CAROL_QIMG" --arg uid "$U1" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice liked carol's photo-quote"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_CAROL_QIMG" --arg uid "$U2" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob liked carol's photo-quote"
+fi
+
+# ── 9. Reposts ────────────────────────────────────────────────────────────────
+info "Creating reposts…"
+
+# carol reposts alice's first post
+if [[ -n "$POST_ALICE" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_ALICE" --arg uid "$U3" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol reposted alice's post"
+fi
+
+# alice reposts bob's first post
+if [[ -n "$POST_BOB" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_BOB" --arg uid "$U1" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice reposted bob's post"
+fi
+
+# bob reposts carol's first post
+if [[ -n "$POST_CAROL" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_CAROL" --arg uid "$U2" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob reposted carol's post"
+fi
+
+# alice reposts carol's photo-quote
+if [[ -n "${POST_CAROL_QIMG:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_CAROL_QIMG" --arg uid "$U1" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice reposted carol's photo-quote"
+fi
+
+# carol reposts bob's photo-quote
+if [[ -n "${POST_BOB_QIMG:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_BOB_QIMG" --arg uid "$U3" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol reposted bob's photo-quote"
+fi
+
+# bob reposts alice's photo post
+if [[ -n "${POST_ALICE_PHOTO:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_ALICE_PHOTO" --arg uid "$U2" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob reposted alice's photo"
+fi
+
 # ── Done ───────────────────────────────────────────────────────────────────────
 echo ""
 info "✅  Seed complete."
-info "    Profiles : alice, bob, carol"
-info "    Posts    : up to 24 (8 text, 4 quote, 3 link, 9 photo)"
-info "    Follows  : 3"
-info "    Comments : up to 13 (8 top-level + 4 replies)"
-info "    Likes    : up to 12 (11 post + 1 comment)"
+info "    Profiles : alice (writing/tech/productivity), bob (programming/OSS/AI), carol (design/photo/art)"
+info "    Posts    : up to 36 (text, quote, link, photo, photo-quote)"
+info "    Follows  : 5 (alice↔carol, alice→bob, bob→alice, carol→alice)"
+info "    Comments : up to 45 (top-level + replies on all post types)"
+info "    Likes    : up to 32 (posts and comments)"
+info "    Reposts  : up to 6"
 echo ""
 warn "Note: seed profiles have fake user IDs and are read-only on the frontend."
 warn "Real users can sign up and will get their own profiles via ensureProfile()."

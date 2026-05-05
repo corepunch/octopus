@@ -157,6 +157,12 @@ collections:
         size: 1024
         required: false
         default: ""
+      # interests: up to 20 topics (e.g. "technology", "design")
+      - key: "interests"
+        type: "string"
+        size: 64
+        required: false
+        array: true
     indexes:
       # One profile per Appwrite user
       - key: "idx_user_id_unique"
@@ -249,6 +255,41 @@ collections:
         type: "unique"
         attributes: ["userId", "targetType", "targetId"]
         orders: ["ASC", "ASC", "ASC"]
+
+  # ── reposts ────────────────────────────────────────────────────────────────
+  - id: "reposts"
+    name: "Reposts"
+    documentSecurity: true
+    permissions:
+      - 'read("any")'
+      - 'create("users")'
+    attributes:
+      # The post being reposted
+      - key: "postId"
+        type: "string"
+        size: 36
+        required: true
+      # The user who reposted
+      - key: "userId"
+        type: "string"
+        size: 36
+        required: true
+    indexes:
+      # Count reposts per post
+      - key: "idx_reposts_post"
+        type: "key"
+        attributes: ["postId"]
+        orders: ["ASC"]
+      # All reposts by a given user
+      - key: "idx_reposts_user"
+        type: "key"
+        attributes: ["userId"]
+        orders: ["ASC"]
+      # Prevent duplicate reposts: one repost per user per post
+      - key: "idx_reposts_unique"
+        type: "unique"
+        attributes: ["userId", "postId"]
+        orders: ["ASC", "ASC"]
 
 storage:
 
