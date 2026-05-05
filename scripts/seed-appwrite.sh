@@ -324,6 +324,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:       "On simplicity",
       content:     "Simplicity is the ultimate sophistication.",
       postType:    "quote",
       quoteSource: "Leonardo da Vinci",
@@ -342,6 +343,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:    "Appwrite documentation",
       content: "The official Appwrite documentation is surprisingly readable. Highly recommended for anyone building a BaaS-powered static site.",
       postType: "link",
       linkUrl:  "https://appwrite.io/docs",
@@ -359,6 +361,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:       "Good design is invisible",
       content:     "Good design, when done well, should be invisible. It is only when it is done poorly that we notice it.",
       postType:    "quote",
       quoteSource: "Jony Ive",
@@ -377,6 +380,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:    "Markdown Guide",
       content: "A free and open-source reference guide that explains how to use Markdown. Essential reading for any technical writer.",
       postType: "link",
       linkUrl:  "https://www.markdownguide.org",
@@ -394,6 +398,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:       "On readable code",
       content:     "Programs must be written for people to read, and only incidentally for machines to execute.",
       postType:    "quote",
       quoteSource: "Harold Abelson",
@@ -412,6 +417,7 @@ aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
   '{
     documentId: "unique()",
     data: {
+      title:       "On starting",
       content:     "The scariest moment is always just before you start.",
       postType:    "quote",
       quoteSource: "Stephen King",
@@ -470,11 +476,9 @@ if [[ -n "$IMG1" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Morning light",
         content:    "Golden hour on a quiet trail. Some mornings the world just looks right.",
         postType:   "photo",
-        imageId:    $img,
-        authorId:   $uid,
-        authorName: "alice",
         tags:       ["photography","nature","morning"],
         published:  true
       },
@@ -491,6 +495,7 @@ if [[ -n "$IMG2" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "City geometry",
         content:    "Lines and angles everywhere. Urban spaces have a visual logic of their own.",
         postType:   "photo",
         imageId:    $img,
@@ -512,6 +517,7 @@ if [[ -n "$IMG3" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Texture study",
         content:    "Close-up surfaces reveal a whole other world of colour and form.",
         postType:   "photo",
         imageId:    $img,
@@ -533,6 +539,7 @@ if [[ -n "$IMG4" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Ocean calm",
         content:    "There is something about open water that resets the mind completely. Stood here for half an hour and felt all the noise drain away.",
         postType:   "photo",
         imageId:    $img,
@@ -554,6 +561,7 @@ if [[ -n "$IMG5" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Workspace",
         content:    "The desk where most of this blog gets written. Minimal on purpose — distractions are the enemy of deep work.",
         postType:   "photo",
         imageId:    $img,
@@ -575,6 +583,7 @@ if [[ -n "$IMG6" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Street scene",
         content:    "Street photography teaches you to see the world differently. Every corner is a composition waiting to be noticed.",
         postType:   "photo",
         imageId:    $img,
@@ -596,6 +605,7 @@ if [[ -n "$IMG7" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Forest light",
         content:    "Late autumn light through the trees. This is why I always carry a camera.",
         postType:   "photo",
         imageId:    $img,
@@ -617,6 +627,7 @@ if [[ -n "$IMG8" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Night city",
         content:    "Cities come alive after dark. Long exposures turn headlights into rivers of light.",
         postType:   "photo",
         imageId:    $img,
@@ -638,6 +649,7 @@ if [[ -n "$IMG9" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Minimalist interior",
         content:    "Negative space is not empty — it is breathing room. This room gets it exactly right.",
         postType:   "photo",
         imageId:    $img,
@@ -659,6 +671,7 @@ if [[ -n "$IMG10" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Mountain perspective",
         content:    "Sometimes the only way to gain perspective is to get higher up. Cleared my head completely.",
         postType:   "photo",
         imageId:    $img,
@@ -680,6 +693,7 @@ if [[ -n "$IMG11" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Rainy day",
         content:    "Rainy days are underrated for deep work. The sound alone is worth the grey skies.",
         postType:   "photo",
         imageId:    $img,
@@ -701,6 +715,7 @@ if [[ -n "$IMG12" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:      "Macro flowers",
         content:    "Macro photography changed how I see everyday objects. At this scale, ordinary things become extraordinary.",
         postType:   "photo",
         imageId:    $img,
@@ -830,6 +845,7 @@ if [[ -n "$QIMG1" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:       "Not all those who wander are lost",
         content:     "Not all those who wander are lost.",
         postType:    "quote",
         quoteSource: "J.R.R. Tolkien",
@@ -853,6 +869,7 @@ if [[ -n "$QIMG2" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:       "Human-readable code",
         content:     "Any fool can write code that a computer can understand. Good programmers write code that humans can understand.",
         postType:    "quote",
         quoteSource: "Martin Fowler",
@@ -876,6 +893,7 @@ if [[ -n "$QIMG3" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:       "Design is how it works",
         content:     "Design is not just what it looks like and feels like. Design is how it works.",
         postType:    "quote",
         quoteSource: "Steve Jobs",
@@ -899,6 +917,7 @@ if [[ -n "$QIMG4" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:       "Sit down and bleed",
         content:     "There is nothing to writing. All you do is sit down at a typewriter and bleed.",
         postType:    "quote",
         quoteSource: "Ernest Hemingway",
@@ -922,6 +941,7 @@ if [[ -n "$QIMG5" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:       "Love what you do",
         content:     "The only way to do great work is to love what you do.",
         postType:    "quote",
         quoteSource: "Steve Jobs",
@@ -944,6 +964,7 @@ if [[ -n "$QIMG6" ]]; then
     '{
       documentId: "unique()",
       data: {
+        title:       "Forms assembled in the light",
         content:     "Architecture is the learned game, correct and magnificent, of forms assembled in the light.",
         postType:    "quote",
         quoteSource: "Le Corbusier",
