@@ -143,14 +143,17 @@ async function initCreate() {
       // imageId is uploaded after validation passes (below)
 
     } else if (createPostType === 'link') {
-      const linkUrl = document.getElementById('link-url').value.trim();
-      const desc    = document.getElementById('link-desc').value.trim();
-      if (!linkUrl) { showAlert('alert', 'URL is required.', 'error'); return; }
+      const linkTitle = document.getElementById('link-title').value.trim();
+      const linkUrl   = document.getElementById('link-url').value.trim();
+      const desc      = document.getElementById('link-desc').value.trim();
+      if (!linkTitle) { showAlert('alert', 'Title is required.', 'error'); return; }
+      if (!linkUrl)   { showAlert('alert', 'URL is required.', 'error'); return; }
       // Require http/https to prevent javascript: or data: XSS
       if (!sanitizeUrl(linkUrl)) {
         showAlert('alert', 'URL must start with http:// or https://', 'error');
         return;
       }
+      docData.title   = linkTitle;
       docData.content = desc;
       docData.linkUrl = linkUrl;
     }
