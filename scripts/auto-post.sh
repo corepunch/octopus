@@ -215,6 +215,7 @@ for username in $POST_AS; do
     '{
       documentId: "unique()",
       data: {
+        title:      $title,
         content:    $comment,
         postType:   "link",
         linkUrl:    $url,
