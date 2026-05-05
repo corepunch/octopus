@@ -228,7 +228,7 @@ do_quote_post() {
   info "  Fetching quote from zenquotes.io…"
   local quote_json; quote_json=$(fetch_quote)
   if [[ -z "$quote_json" ]]; then
-    warn "  No quote returned – skipping $username."
+    warn "  Failed to fetch quote from zenquotes.io (network timeout or invalid response) – skipping $username."
     return
   fi
 
@@ -236,8 +236,9 @@ do_quote_post() {
   local author; author=$(echo "$quote_json" | jq -r '.author')
   local first_interest; first_interest=$(echo "$interests" | awk '{print $1}')
 
-  # Background image: picsum seeded by interest + a random suffix for variety
-  local img_url="https://picsum.photos/seed/${first_interest}-${RANDOM}/1200/800"
+  # Background image: picsum seeded by interest + today's date for reproducibility
+  local today; today=$(date -u +"%Y%m%d")
+  local img_url="https://picsum.photos/seed/${first_interest}-${today}/1200/800"
   info "  Uploading background photo…"
   local img_id; img_id=$(upload_photo "$img_url")
 
@@ -359,14 +360,15 @@ do_photo_post() {
     title=$(echo "$apod"   | jq -r '.title')
     img_url=$(echo "$apod" | jq -r '.url')
     local expl; expl=$(echo "$apod" | jq -r '.explanation')
-    # Trim explanation to 200 characters for the post caption
-    caption=$(echo "$expl" | cut -c1-200)
-    [[ ${#expl} -gt 200 ]] && caption="${caption}…"
+    # Trim explanation to ~200 characters at a word boundary for the post caption
+    caption=$(echo "$expl" | fold -s -w 200 | head -1)
+    [[ ${#expl} -gt ${#caption} ]] && caption="${caption}…"
     tag="space"
   else
-    # Fallback: random picsum image seeded by first interest
+    # Fallback: picsum image seeded by first interest + today's date
     title="Photo of the day"
-    img_url="https://picsum.photos/seed/${first_interest}-${RANDOM}/1200/800"
+    local today; today=$(date -u +"%Y%m%d")
+    img_url="https://picsum.photos/seed/${first_interest}-${today}/1200/800"
     caption="A visual find."
     tag="$first_interest"
   fi
