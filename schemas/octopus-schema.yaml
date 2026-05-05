@@ -31,7 +31,7 @@ collections:
       - key: "title"
         type: "string"
         size: 256
-        required: false
+        required: true
       # content: markdown body / quote text / photo caption / link description
       - key: "content"
         type: "string"
