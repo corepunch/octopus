@@ -136,13 +136,13 @@ a:hover { text-decoration: underline; }
   display: inline-flex;
   align-items: center;
   height: 100%;
-  margin-left: 12px;
+  margin-left: 10px;
 }
 .nav-logo:hover { text-decoration: none; color: var(--color-accent-soft); }
 
 .nav-logo-image {
   display: block;
-  height: 28px;
+  height: 42px;
   width: auto;
 }
 
