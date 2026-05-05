@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# provision-appwrite.sh  (v2 – adds comments and likes collections)
+# provision-appwrite.sh  (v3 – adds reposts collection)
 #
 # Creates the Octopus database schema on Appwrite using the REST API.
 # No npm / Node.js required – only curl and jq.
@@ -392,8 +392,60 @@ aw POST "/databases/$DB_ID/collections/likes/indexes" "$(jq -n \
 
 info "Collection 'likes' done."
 
-# ── 7. Storage bucket: post-images ────────────────────────────────────────────
-info "Creating storage bucket 'post-images'…"
+# ── 7. Collection: reposts ─────────────────────────────────────────────────────
+info "Creating collection 'reposts'…"
+aw POST "/databases/$DB_ID/collections" "$(jq -n \
+  --arg id   "reposts" \
+  --arg name "Reposts" \
+  '{
+    collectionId: $id,
+    name:         $name,
+    documentSecurity: true,
+    permissions: [
+      "read(\"any\")",
+      "create(\"users\")"
+    ]
+  }')" >/dev/null
+
+info "  → attributes…"
+# postId: the post being reposted
+attr reposts string "$(jq -n '{key:"postId", size:36, required:true}')"
+# userId: the user who reposted
+attr reposts string "$(jq -n '{key:"userId", size:36, required:true}')"
+
+info "  → indexes…"
+wait_for_attrs reposts
+
+# All reposts of a given post (count reposts per post)
+aw POST "/databases/$DB_ID/collections/reposts/indexes" "$(jq -n \
+  '{
+    key:        "idx_reposts_post",
+    type:       "key",
+    attributes: ["postId"],
+    orders:     ["ASC"]
+  }')" >/dev/null
+
+# All reposts by a given user
+aw POST "/databases/$DB_ID/collections/reposts/indexes" "$(jq -n \
+  '{
+    key:        "idx_reposts_user",
+    type:       "key",
+    attributes: ["userId"],
+    orders:     ["ASC"]
+  }')" >/dev/null
+
+# Prevent duplicate reposts: one repost per user per post
+aw POST "/databases/$DB_ID/collections/reposts/indexes" "$(jq -n \
+  '{
+    key:        "idx_reposts_unique",
+    type:       "unique",
+    attributes: ["userId","postId"],
+    orders:     ["ASC","ASC"]
+  }')" >/dev/null
+
+info "Collection 'reposts' done."
+
+# ── 8. Storage bucket: post-images ────────────────────────────────────────────
 bucket_raw=$(curl -s -w "\n%{http_code}" \
   -X POST \
   -H "Content-Type: application/json" \
@@ -419,7 +471,7 @@ else
   sed '$d' <<<"$bucket_raw" | jq -r '.message // empty' >&2
 fi
 
-# ── 8. Register Web Platform (CORS) ───────────────────────────────────────────
+# ── 9. Register Web Platform (CORS) ───────────────────────────────────────────
 # Appwrite blocks browser requests from origins that are not registered as Web
 # platforms on the project (HTTP 403 / CORS errors). Registering the platform
 # here means users who run this script never have to do it manually.
@@ -453,7 +505,7 @@ fi
 echo ""
 info "✅  Appwrite schema provisioned successfully."
 info "    Database    : $DB_ID"
-info "    Collections : posts, follows, profiles, comments, likes"
+info "    Collections : posts, follows, profiles, comments, likes, reposts"
 info "    Storage     : post-images"
 info "    Web platform: $PAGES_HOSTNAME"
 echo ""

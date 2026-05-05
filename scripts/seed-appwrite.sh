@@ -8,8 +8,9 @@
 #   • 12 photo posts (uploaded from picsum.photos)
 #   • 6 photo quote posts (quotes with background images, card/meme style)
 #   • 5 follow relationships
-#   • ~20 comments with replies
+#   • ~23 comments with replies (text, photo-quote, and photo posts)
 #   • Likes on posts and comments
+#   • Reposts across users
 #
 # Run with --reset to wipe all existing documents first (destructive!).
 #
@@ -152,6 +153,7 @@ upload_photo() {
 # ── Optional reset ────────────────────────────────────────────────────────────
 if $RESET; then
   warn "⚠️  RESET MODE – deleting all existing documents and files…"
+  delete_all reposts
   delete_all likes
   delete_all comments
   delete_all follows
@@ -926,6 +928,28 @@ info "  bob   post 2 : ${POST_BOB2:-<not found>}"
 info "  carol post 1 : ${POST_CAROL:-<not found>}"
 info "  carol post 2 : ${POST_CAROL2:-<not found>}"
 
+POST_ALICE_PHOTO=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U1%22)&queries[]=equal(%22postType%22,%22photo%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+POST_BOB_PHOTO=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U2%22)&queries[]=equal(%22postType%22,%22photo%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+POST_CAROL_PHOTO=$(curl -s \
+  -H "X-Appwrite-Key: $API_KEY" \
+  -H "X-Appwrite-Project: $PROJECT" \
+  "$ENDPOINT/databases/$DB_ID/collections/posts/documents?queries[]=equal(%22authorId%22,%22$U3%22)&queries[]=equal(%22postType%22,%22photo%22)&queries[]=orderAsc(%22\$createdAt%22)&queries[]=limit(1)" \
+  | jq -r '.documents[0]."$id" // empty')
+
+info "  alice photo  : ${POST_ALICE_PHOTO:-<not found>}"
+info "  bob   photo  : ${POST_BOB_PHOTO:-<not found>}"
+info "  carol photo  : ${POST_CAROL_PHOTO:-<not found>}"
+
 # ── 7. Comments ───────────────────────────────────────────────────────────────
 info "Creating comments…"
 
@@ -1255,6 +1279,113 @@ if [[ -n "$POST_CAROL_QIMG" ]]; then
       }')" >/dev/null && info "  alice replies to bob on carol photo-quote"
   fi
 fi
+# ── Additional comments on photo posts ────────────────────────────────────────
+
+# carol and bob comment on alice's first photo post
+if [[ -n "$POST_ALICE_PHOTO" ]]; then
+  aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_ALICE_PHOTO" \
+    --arg uid "$U3" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "carol",
+        body:       "That golden light is everything. What time was this taken?",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  carol → alice photo"
+
+  aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_ALICE_PHOTO" \
+    --arg uid "$U2" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "bob",
+        body:       "Stunning. This kind of morning light makes getting up early worth it.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" >/dev/null && info "  bob → alice photo"
+fi
+
+# alice and carol comment on bob's first photo post
+if [[ -n "$POST_BOB_PHOTO" ]]; then
+  C_BP=$(aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_BOB_PHOTO" \
+    --arg uid "$U3" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "carol",
+        body:       "The geometry in this is fantastic — very Mondrian. Did you edit or is this straight out of camera?",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" | jq -r '."$id"') && info "  carol → bob photo"
+
+  if [[ -n "$C_BP" ]]; then
+    aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+      --arg pid "$POST_BOB_PHOTO" \
+      --arg uid "$U1" \
+      --arg par "$C_BP" \
+      '{
+        documentId: "unique()",
+        data: {
+          postId:     $pid,
+          authorId:   $uid,
+          authorName: "alice",
+          body:       "Agree with carol — the lines are incredible. I would frame this.",
+          parentId:   $par
+        },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  alice replies to carol on bob photo"
+  fi
+fi
+
+# alice and bob comment on carol's first photo post
+if [[ -n "$POST_CAROL_PHOTO" ]]; then
+  C_CP=$(aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+    --arg pid "$POST_CAROL_PHOTO" \
+    --arg uid "$U1" \
+    '{
+      documentId: "unique()",
+      data: {
+        postId:     $pid,
+        authorId:   $uid,
+        authorName: "alice",
+        body:       "Close-up shots like this are what got me into photography. There is a whole world hiding in plain sight.",
+        parentId:   ""
+      },
+      permissions: ["read(\"any\")"]
+    }')" | jq -r '."$id"') && info "  alice → carol photo"
+
+  if [[ -n "$C_CP" ]]; then
+    aw POST "/databases/$DB_ID/collections/comments/documents" "$(jq -n \
+      --arg pid "$POST_CAROL_PHOTO" \
+      --arg uid "$U2" \
+      --arg par "$C_CP" \
+      '{
+        documentId: "unique()",
+        data: {
+          postId:     $pid,
+          authorId:   $uid,
+          authorName: "bob",
+          body:       "Totally. I never appreciated texture photography until I tried it — it is harder than it looks.",
+          parentId:   $par
+        },
+        permissions: ["read(\"any\")"]
+      }')" >/dev/null && info "  bob replies to alice on carol photo"
+  fi
+fi
+
 info "Creating likes…"
 
 # bob likes alice's first post
@@ -1368,14 +1499,134 @@ if [[ -n "$POST_CAROL2" ]]; then
     }')" >/dev/null && info "  bob liked carol's second post"
 fi
 
+# Likes on photo posts
+if [[ -n "$POST_ALICE_PHOTO" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_ALICE_PHOTO" --arg uid "$U2" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob liked alice's photo"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_ALICE_PHOTO" --arg uid "$U3" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol liked alice's photo"
+fi
+
+if [[ -n "$POST_BOB_PHOTO" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_BOB_PHOTO" --arg uid "$U1" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice liked bob's photo"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_BOB_PHOTO" --arg uid "$U3" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol liked bob's photo"
+fi
+
+if [[ -n "$POST_CAROL_PHOTO" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_CAROL_PHOTO" --arg uid "$U1" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice liked carol's photo"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_CAROL_PHOTO" --arg uid "$U2" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob liked carol's photo"
+fi
+
+# Likes on photo-quote posts
+if [[ -n "${POST_ALICE_QIMG:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_ALICE_QIMG" --arg uid "$U2" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob liked alice's photo-quote"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_ALICE_QIMG" --arg uid "$U3" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol liked alice's photo-quote"
+fi
+
+if [[ -n "${POST_BOB_QIMG:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_BOB_QIMG" --arg uid "$U1" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice liked bob's photo-quote"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_BOB_QIMG" --arg uid "$U3" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol liked bob's photo-quote"
+fi
+
+if [[ -n "${POST_CAROL_QIMG:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_CAROL_QIMG" --arg uid "$U1" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice liked carol's photo-quote"
+  aw POST "/databases/$DB_ID/collections/likes/documents" "$(jq -n \
+    --arg tid "$POST_CAROL_QIMG" --arg uid "$U2" \
+    '{documentId:"unique()",data:{targetId:$tid,targetType:"post",userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob liked carol's photo-quote"
+fi
+
+# ── 9. Reposts ────────────────────────────────────────────────────────────────
+info "Creating reposts…"
+
+# carol reposts alice's first post
+if [[ -n "$POST_ALICE" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_ALICE" --arg uid "$U3" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol reposted alice's post"
+fi
+
+# alice reposts bob's first post
+if [[ -n "$POST_BOB" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_BOB" --arg uid "$U1" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice reposted bob's post"
+fi
+
+# bob reposts carol's first post
+if [[ -n "$POST_CAROL" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_CAROL" --arg uid "$U2" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob reposted carol's post"
+fi
+
+# alice reposts carol's photo-quote
+if [[ -n "${POST_CAROL_QIMG:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_CAROL_QIMG" --arg uid "$U1" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  alice reposted carol's photo-quote"
+fi
+
+# carol reposts bob's photo-quote
+if [[ -n "${POST_BOB_QIMG:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_BOB_QIMG" --arg uid "$U3" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  carol reposted bob's photo-quote"
+fi
+
+# bob reposts alice's photo post
+if [[ -n "${POST_ALICE_PHOTO:-}" ]]; then
+  aw POST "/databases/$DB_ID/collections/reposts/documents" "$(jq -n \
+    --arg pid "$POST_ALICE_PHOTO" --arg uid "$U2" \
+    '{documentId:"unique()",data:{postId:$pid,userId:$uid},permissions:["read(\"any\")"]}')" \
+    >/dev/null && info "  bob reposted alice's photo"
+fi
+
 # ── Done ───────────────────────────────────────────────────────────────────────
 echo ""
 info "✅  Seed complete."
 info "    Profiles : alice, bob, carol"
 info "    Posts    : up to 24 (8 text, 4 quote, 3 link, 9 photo)"
 info "    Follows  : 3"
-info "    Comments : up to 13 (8 top-level + 4 replies)"
-info "    Likes    : up to 12 (11 post + 1 comment)"
+info "    Comments : up to 23 (top-level + replies on text, photo-quote, and photo posts)"
+info "    Likes    : up to 28 (posts and comments)"
+info "    Reposts  : up to 6"
 echo ""
 warn "Note: seed profiles have fake user IDs and are read-only on the frontend."
 warn "Real users can sign up and will get their own profiles via ensureProfile()."
