@@ -836,6 +836,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   padding-left: 30px;
   margin-bottom: 20px;
   font-style: normal;
+  text-align: right;
 }
 
 /* ── Single-post view: link card ─────────────────────────── */
