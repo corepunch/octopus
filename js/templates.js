@@ -32,22 +32,12 @@
       </div>
     </div>
   {{else if (eq postType "quote")}}
+    {{#if imageUrl}}<a href="post.html?id={{id}}" class="post-card-image-wrap"><img class="post-card-image" src="{{imageUrl}}" alt="" loading="lazy"/></a>{{/if}}
     <div class="post-card-body">
-      {{#if imageUrl}}
-        <a href="post.html?id={{id}}" class="post-card-quote-bg-link">
-          <div class="post-card-quote-bg" style="background-image:url('{{imageUrl}}')">
-            <div class="post-card-quote-bg-overlay">
-              <blockquote class="post-card-quote-bg-text">{{content}}</blockquote>
-              {{#if quoteSource}}<cite class="post-card-quote-bg-source">— {{quoteSource}}</cite>{{/if}}
-            </div>
-          </div>
-        </a>
-      {{else}}
-        <a href="post.html?id={{id}}" class="post-card-quote-link">
-          <blockquote class="post-card-quote">{{content}}</blockquote>
-          {{#if quoteSource}}<cite class="post-card-quote-source">— {{quoteSource}}</cite>{{/if}}
-        </a>
-      {{/if}}
+      <a href="post.html?id={{id}}" class="post-card-quote-link">
+        <blockquote class="post-card-quote">{{content}}</blockquote>
+        {{#if quoteSource}}<cite class="post-card-quote-source">— {{quoteSource}}</cite>{{/if}}
+      </a>
       <div class="post-meta">
         by <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
         · {{timeAgo createdAt}}
@@ -193,17 +183,9 @@
   </div>
   {{#if content}}<div class="markdown-body">{{markdown content}}</div>{{/if}}
 {{else if (eq postType "quote")}}
-  {{#if imageUrl}}
-    <div class="post-page-quote-bg" style="background-image:url('{{imageUrl}}')">
-      <div class="post-page-quote-bg-overlay">
-        <blockquote class="post-page-quote-bg-text">{{content}}</blockquote>
-        {{#if quoteSource}}<cite class="post-page-quote-bg-source">— {{quoteSource}}</cite>{{/if}}
-      </div>
-    </div>
-  {{else}}
-    <blockquote class="post-page-quote">{{content}}</blockquote>
-    {{#if quoteSource}}<cite class="post-page-quote-source">— {{quoteSource}}</cite>{{/if}}
-  {{/if}}
+  {{#if imageUrl}}<img class="post-page-image" src="{{imageUrl}}" alt=""/>{{/if}}
+  <blockquote class="post-page-quote">{{content}}</blockquote>
+  {{#if quoteSource}}<cite class="post-page-quote-source">— {{quoteSource}}</cite>{{/if}}
   <div class="post-page-meta">
     By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
     · {{timeAgo createdAt}}

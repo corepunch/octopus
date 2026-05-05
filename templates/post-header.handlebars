@@ -12,17 +12,9 @@
   </div>
   {{#if content}}<div class="markdown-body">{{markdown content}}</div>{{/if}}
 {{else if (eq postType "quote")}}
-  {{#if imageUrl}}
-    <div class="post-page-quote-bg" style="background-image:url('{{imageUrl}}')">
-      <div class="post-page-quote-bg-overlay">
-        <blockquote class="post-page-quote-bg-text">{{content}}</blockquote>
-        {{#if quoteSource}}<cite class="post-page-quote-bg-source">— {{quoteSource}}</cite>{{/if}}
-      </div>
-    </div>
-  {{else}}
-    <blockquote class="post-page-quote">{{content}}</blockquote>
-    {{#if quoteSource}}<cite class="post-page-quote-source">— {{quoteSource}}</cite>{{/if}}
-  {{/if}}
+  {{#if imageUrl}}<img class="post-page-image" src="{{imageUrl}}" alt=""/>{{/if}}
+  <blockquote class="post-page-quote">{{content}}</blockquote>
+  {{#if quoteSource}}<cite class="post-page-quote-source">— {{quoteSource}}</cite>{{/if}}
   <div class="post-page-meta">
     By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
     · {{timeAgo createdAt}}
