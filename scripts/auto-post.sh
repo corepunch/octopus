@@ -42,8 +42,8 @@ POST_AS="${POST_AS:-alice bob carol}"
 
 # Colour helpers
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
-info()    { echo -e "${GREEN}[+]${NC} $*"; }
-warn()    { echo -e "${YELLOW}[~]${NC} $*"; }
+info()    { echo -e "${GREEN}[+]${NC} $*" >&2; }
+warn()    { echo -e "${YELLOW}[~]${NC} $*" >&2; }
 err_exit(){ echo -e "${RED}[!]${NC} $*" >&2; exit 1; }
 
 # ── Seed user definitions ─────────────────────────────────────────────────────
