@@ -286,6 +286,8 @@ a:hover { text-decoration: underline; }
 }
 .post-card-title:hover { color: var(--color-accent); }
 .post-card-title--link { color: var(--color-accent); }
+.post-card-link-domain { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
+.post-page-link-domain { font-size: 13px; color: var(--color-text-muted); margin-bottom: 8px; }
 
 .post-meta {
   color: var(--color-text-subtle);

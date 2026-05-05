@@ -37,11 +37,16 @@
 {{else if (eq postType "link")}}
   <h1 class="post-page-title">
     {{#if linkUrl}}
-      <a href="{{safeUrl linkUrl}}" class="post-page-title-link" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{displayUrl linkUrl}}</a>
+      {{#if title}}
+        <a href="{{safeUrl linkUrl}}" class="post-page-title-link" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{title}}</a>
+      {{else}}
+        <a href="{{safeUrl linkUrl}}" class="post-page-title-link" target="_blank" rel="noopener noreferrer">{{icon "link"}} {{displayUrl linkUrl}}</a>
+      {{/if}}
     {{else}}
       Link
     {{/if}}
   </h1>
+  {{#if title}}{{#if linkUrl}}<div class="post-page-link-domain">{{displayUrl linkUrl}}</div>{{/if}}{{/if}}
   <div class="post-page-meta">
     By <a href="profile.html?id={{urlEncode authorId}}" class="author-link">{{authorName}}</a>
     · {{timeAgo createdAt}}
