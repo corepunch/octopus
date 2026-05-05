@@ -1577,7 +1577,9 @@ fi
 
 # ── More extended comments on text posts ─────────────────────────────────────
 
-# alice's open-source post
+info "Creating extended comments on text posts…"
+
+# bob's open-source post (bob = U2, first text post by $U2)
 POST_BOB_OS=$(curl -s \
   -H "X-Appwrite-Key: $API_KEY" \
   -H "X-Appwrite-Project: $PROJECT" \
@@ -1709,6 +1711,8 @@ if [[ -n "$POST_ALICE2" ]]; then
       permissions: ["read(\"any\")"]
     }')" >/dev/null && info "  bob → alice markdown post 2"
 fi
+
+info "Creating likes…"
 
 # bob likes alice's first post
 if [[ -n "$POST_ALICE" ]]; then

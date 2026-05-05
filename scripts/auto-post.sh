@@ -2,9 +2,14 @@
 # =============================================================================
 # auto-post.sh
 #
-# For each seed user (alice, bob, carol), searches the Hacker News Algolia API
-# for a recent story matching one of their interests, then creates a link post
-# in the Appwrite database.
+# For each seed user (alice, bob, carol), fetches their interests from the
+# Appwrite profiles collection, searches the Hacker News Algolia API for a
+# recent story matching one of those interests, then creates a link post in
+# the Appwrite database.
+#
+# Interests are read live from the profile document so they stay in sync with
+# any edits made via the UI. Hard-coded fallbacks are used only if the profile
+# is unreachable or has no interests field.
 #
 # Required environment variables:
 #   APPWRITE_API_KEY    – server-side API key (stored in GitHub Secrets)
@@ -45,12 +50,35 @@ declare -A USER_ID=(
   [carol]="seed-user-carol-003"
 )
 
-# Each user's interests – ordered by priority
-declare -A USER_INTERESTS=(
+# Fallback interests used only when the profile document has no interests field.
+declare -A FALLBACK_INTERESTS=(
   [alice]="writing technology productivity books science philosophy film"
   [bob]="programming open-source web-development ai startups technology"
   [carol]="design photography art architecture film travel"
 )
+
+# ── Helper: fetch interests for a user from the profiles collection ────────────
+# Returns a space-separated string of interest values, or the fallback if absent.
+get_user_interests() {
+  local uid="$1" fallback="$2"
+  local raw
+  if ! raw=$(curl -sf --max-time 15 \
+    -H "X-Appwrite-Key: $API_KEY" \
+    -H "X-Appwrite-Project: $PROJECT" \
+    "$ENDPOINT/databases/$DB_ID/collections/profiles/documents/$uid" 2>/dev/null); then
+    warn "  Could not reach Appwrite profile for $uid – using fallback."
+    echo "$fallback"
+    return
+  fi
+
+  local interests; interests=$(echo "$raw" | jq -r '(.interests // []) | join(" ")' 2>/dev/null || echo "")
+  if [[ -z "$interests" ]]; then
+    warn "  No interests found in profile – using fallback."
+    echo "$fallback"
+  else
+    echo "$interests"
+  fi
+}
 
 # ── Interest → search terms mapping ──────────────────────────────────────────
 # Maps an interest keyword to the search query used against HN Algolia.
@@ -129,7 +157,9 @@ for username in $POST_AS; do
     continue
   fi
 
-  interests="${USER_INTERESTS[$username]}"
+  fallback="${FALLBACK_INTERESTS[$username]:-technology}"
+  info "Fetching interests for $username from Appwrite profile…"
+  interests=$(get_user_interests "$uid" "$fallback")
   info "Processing $username (interests: $interests)…"
 
   story=""
@@ -157,6 +187,15 @@ for username in $POST_AS; do
   url=$(echo "$story" | jq -r '.url')
   points=$(echo "$story" | jq -r '.points')
   hn_author=$(echo "$story" | jq -r '.author')
+
+  # Validate that the URL uses http or https to prevent stored XSS / broken links
+  case "$url" in
+    http://*|https://*) ;;
+    *)
+      warn "  Skipping story with non-http(s) URL: $url"
+      continue
+      ;;
+  esac
 
   info "  Story: $title"
   info "  URL  : $url"
