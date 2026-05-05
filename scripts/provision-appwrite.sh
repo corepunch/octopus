@@ -122,9 +122,9 @@ aw POST "/databases/$DB_ID/collections" "$(jq -n \
   }')" >/dev/null
 
 info "  → attributes…"
-# title: string(256) optional — only used by text posts
+# title: string(256) required — used by all post types; text post title, link headline, etc.
 attr posts string "$(jq -n \
-  '{key:"title", size:256, required:false}')"
+  '{key:"title", size:256, required:true}')"
 
 # content: string(65535) required  (markdown body / quote text / photo caption / link description)
 attr posts string "$(jq -n \

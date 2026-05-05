@@ -311,11 +311,17 @@ const results = await databases.listDocuments(APPWRITE_DB_ID, COL_POSTS, [
 
 | Collection | Key attributes |
 |---|---|
-| `posts` | `title` (string 256), `content` (string 65535), `authorId` (string 36), `authorName` (string 128), `tags` (string[] 64), `published` (bool) |
-| `follows` | `followerId` (string 36), `followingId` (string 36) |
-| `profiles` | `userId` (string 36), `username` (string 128), `bio` (string 1024) |
+| `posts` | `title` (string 256, **required**), `content` (string 65535), `authorId` (string 36, required), `authorName` (string 128, required), `tags` (string[] 64), `published` (bool), `postType` (string 16: `"text"\|"photo"\|"quote"\|"link"`), `linkUrl` (string 2048), `imageId` (string 36), `quoteSource` (string 256), `userText` (string 2048) |
+| `follows` | `followerId` (string 36, required), `followingId` (string 36, required) |
+| `profiles` | `userId` (string 36, required), `username` (string 128, required), `bio` (string 1024) |
 
 The profile document ID is always the Appwrite user `$id`.
+
+> **`title` is always required** when creating a `posts` document, regardless of post type.
+> - For `text` posts: set `title` to the user-supplied title string.
+> - For `photo`, `quote`, and `link` posts: `title` must still be present. Use the photo caption, quote text summary, or link headline as the value — never omit the field or the Appwrite API will reject the document with *"Missing required attribute: title"*.
+>
+> The UI (`create.js`) initialises `docData` with `title: ''` so the field is always sent. Scripts and server-side code must do the same — always include `title` in the document payload.
 
 ### Appwrite metadata fields
 
