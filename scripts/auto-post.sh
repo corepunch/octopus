@@ -335,7 +335,8 @@ random_picsum_seed() {
 # Returns the Wikipedia thumbnail URL for the person, or empty string on failure.
 fetch_person_photo_url() {
   local name="$1"
-  local encoded; encoded=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$name" 2>/dev/null \
+  local encoded; encoded=$(jq -nr --arg n "$name" '$n|@uri' 2>/dev/null \
+    || python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$name" 2>/dev/null \
     || echo "${name// /+}")
   local raw; raw=$(curl -s --max-time 15 \
     "https://en.wikipedia.org/w/api.php?action=query&titles=${encoded}&prop=pageimages&format=json&pithumbsize=1200" \
