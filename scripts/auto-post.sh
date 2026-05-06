@@ -42,8 +42,8 @@ POST_AS="${POST_AS:-alice bob carol}"
 
 # Colour helpers
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
-info()    { echo -e "${GREEN}[+]${NC} $*"; }
-warn()    { echo -e "${YELLOW}[~]${NC} $*"; }
+info()    { echo -e "${GREEN}[+]${NC} $*" >&2; }
+warn()    { echo -e "${YELLOW}[~]${NC} $*" >&2; }
 err_exit(){ echo -e "${RED}[!]${NC} $*" >&2; exit 1; }
 
 # ── Seed user definitions ─────────────────────────────────────────────────────
@@ -86,7 +86,7 @@ aw() {
   local resp; resp=$(sed '$d' <<<"$raw")
 
   if [[ "$code" -ge 400 ]]; then
-    echo "$resp" | jq -r '.message // "unknown error"' >&2
+    jq -r '.message // "unknown error"' <<< "$resp" >&2
     err_exit "HTTP $code – $method $path"
   fi
   echo "$resp"
@@ -119,11 +119,11 @@ upload_photo() {
 
   if [[ "$code" -ge 400 ]]; then
     echo -e "${YELLOW}[~]${NC}   Storage upload failed (HTTP $code) – skipping." >&2
-    echo "$resp" | jq -r '.message // "unknown error"' >&2
+    jq -r '.message // "unknown error"' <<< "$resp" >&2
     echo ""; return
   fi
 
-  echo "$resp" | jq -r '."$id" // empty'
+  jq -r '."$id" // empty' <<< "$resp"
 }
 
 # ── Helper: fetch interests for a user from the profiles collection ────────────
@@ -139,7 +139,7 @@ get_user_interests() {
     echo "$fallback"; return
   fi
 
-  local interests; interests=$(echo "$raw" | jq -r '(.interests // []) | join(" ")' 2>/dev/null || echo "")
+  local interests; interests=$(jq -r '(.interests // []) | join(" ")' <<< "$raw" 2>/dev/null || echo "")
   if [[ -z "$interests" ]]; then
     warn "  No interests found in profile – using fallback."
     echo "$fallback"
@@ -180,7 +180,7 @@ call_ai() {
     -H "Content-Type: application/json" \
     -d "$payload" 2>/dev/null || echo "")
 
-  echo "$raw" | jq -r '.choices[0].message.content // empty' 2>/dev/null || echo ""
+  jq -r '.choices[0].message.content // empty' <<< "$raw" 2>/dev/null || echo ""
 }
 
 # ── Helper: fetch top posts from a Reddit subreddit ───────────────────────────
@@ -198,7 +198,7 @@ fetch_reddit_top() {
   [[ -z "$raw" ]] && { echo "[]"; return; }
 
   # Filter: score > 50, meaningful title, not deleted/removed
-  echo "$raw" | jq -c '
+  jq -c '
     [
       .data.children[]
       | .data
@@ -217,16 +217,16 @@ fetch_reddit_top() {
           subreddit: .subreddit
         }
     ]
-  ' 2>/dev/null || echo "[]"
+  ' <<< "$raw" 2>/dev/null || echo "[]"
 }
 
 # ── Helper: pick a random item from a JSON array ──────────────────────────────
 pick_random_item() {
   local arr="$1"
-  local len; len=$(echo "$arr" | jq 'length' 2>/dev/null || echo "0")
+  local len; len=$(jq 'length' <<< "$arr" 2>/dev/null || echo "0")
   if [[ "$len" -eq 0 ]]; then echo ""; return; fi
   local idx=$(( RANDOM % len ))
-  echo "$arr" | jq -c ".[$idx]" 2>/dev/null || echo ""
+  jq -c ".[$idx]" <<< "$arr" 2>/dev/null || echo ""
 }
 
 # ── Helpers: map interests to relevant subreddits ─────────────────────────────
@@ -316,13 +316,13 @@ fetch_nasa_apod() {
     "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY" 2>/dev/null || echo "")
   [[ -z "$raw" ]] && { echo ""; return; }
 
-  local media_type; media_type=$(echo "$raw" | jq -r '.media_type // ""')
+  local media_type; media_type=$(jq -r '.media_type // ""' <<< "$raw")
   if [[ "$media_type" != "image" ]]; then
     warn "  NASA APOD is not an image today (type: $media_type) – will use fallback."
     echo ""; return
   fi
 
-  echo "$raw" | jq -c '{title: .title, url: .url, explanation: .explanation}' 2>/dev/null || echo ""
+  jq -c '{title: .title, url: .url, explanation: .explanation}' <<< "$raw" 2>/dev/null || echo ""
 }
 
 # ── Helper: build a unique random picsum seed (interest + two RANDOM words) ───
@@ -355,8 +355,8 @@ do_quote_post() {
   local quote_text="" quote_source=""
 
   if [[ -n "$reddit_post" ]]; then
-    local reddit_title; reddit_title=$(echo "$reddit_post" | jq -r '.title')
-    local reddit_body;  reddit_body=$(echo  "$reddit_post" | jq -r '.text // ""')
+    local reddit_title; reddit_title=$(jq -r '.title' <<< "$reddit_post")
+    local reddit_body;  reddit_body=$(jq -r '.text // ""' <<< "$reddit_post")
     # Append body preview (with ": " separator) only if body is non-empty; truncate to 300 chars
     local source_text="${reddit_title}${reddit_body:+: ${reddit_body:0:300}}"
     info "  Asking AI to craft a quote inspired by: $reddit_title"
@@ -383,8 +383,8 @@ do_quote_post() {
       warn "  All quote sources failed – skipping $username."
       return
     fi
-    quote_text=$(echo "$q_json" | jq -r '.text')
-    quote_source=$(echo "$q_json" | jq -r '.author')
+    quote_text=$(jq -r '.text' <<< "$q_json")
+    quote_source=$(jq -r '.author' <<< "$q_json")
   fi
 
   local first_interest; first_interest=$(echo "$interests" | awk '{print $1}')
@@ -453,11 +453,11 @@ do_link_post() {
   local title="" url="" commentary="" source_tag="reddit"
 
   if [[ -n "$reddit_post" ]]; then
-    title=$(echo "$reddit_post" | jq -r '.title')
-    local score; score=$(echo "$reddit_post" | jq -r '.score')
-    local link_url; link_url=$(echo "$reddit_post" | jq -r '.link_url // ""')
-    local reddit_url; reddit_url=$(echo "$reddit_post" | jq -r '.url')
-    local reddit_text; reddit_text=$(echo "$reddit_post" | jq -r '.text // ""')
+    title=$(jq -r '.title' <<< "$reddit_post")
+    local score; score=$(jq -r '.score' <<< "$reddit_post")
+    local link_url; link_url=$(jq -r '.link_url // ""' <<< "$reddit_post")
+    local reddit_url; reddit_url=$(jq -r '.url' <<< "$reddit_post")
+    local reddit_text; reddit_text=$(jq -r '.text // ""' <<< "$reddit_post")
 
     # Prefer the external link over the Reddit thread
     if [[ "$link_url" =~ ^https?:// ]] && [[ "$link_url" != *reddit.com* ]]; then
@@ -490,9 +490,9 @@ do_link_post() {
       return
     fi
 
-    title=$(echo "$story" | jq -r '.title')
-    url=$(echo "$story"   | jq -r '.url')
-    local points; points=$(echo "$story" | jq -r '.points')
+    title=$(jq -r '.title' <<< "$story")
+    url=$(jq -r '.url' <<< "$story")
+    local points; points=$(jq -r '.points' <<< "$story")
     matched_interest="$hn_matched"
     commentary=$(call_ai \
       "You are $username, a knowledgeable person passionate about ${matched_interest//-/ }. Write a compelling 1-2 sentence post sharing an interesting find. Be insightful and conversational. Under 180 characters." \
@@ -541,9 +541,9 @@ do_photo_post() {
   local img_url="" title="" caption="" tag=""
 
   if [[ -n "$apod" ]]; then
-    title=$(echo "$apod"   | jq -r '.title')
-    img_url=$(echo "$apod" | jq -r '.url')
-    local explanation; explanation=$(echo "$apod" | jq -r '.explanation')
+    title=$(jq -r '.title' <<< "$apod")
+    img_url=$(jq -r '.url' <<< "$apod")
+    local explanation; explanation=$(jq -r '.explanation' <<< "$apod")
     tag="space"
     caption=$(call_ai \
       "You are $username, a creative person who loves astronomy and photography. Write an engaging 1-2 sentence caption for an astronomy photo. Be enthusiastic and vivid. Under 200 characters." \
