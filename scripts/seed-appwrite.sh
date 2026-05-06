@@ -152,6 +152,30 @@ upload_photo() {
   echo "$resp" | jq -r '."$id"'
 }
 
+# ── Helper: fetch a photo URL for a named person from Wikipedia ──────────────
+# Returns the Wikipedia thumbnail URL, or empty string on failure.
+fetch_person_photo_url() {
+  local name="$1"
+  local encoded; encoded=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$name" 2>/dev/null \
+    || echo "${name// /+}")
+  local raw; raw=$(curl -s --max-time 15 \
+    "https://en.wikipedia.org/w/api.php?action=query&titles=${encoded}&prop=pageimages&format=json&pithumbsize=1200" \
+    2>/dev/null || echo "")
+  jq -r '(.query.pages | to_entries[0].value.thumbnail.source) // ""' <<< "$raw" 2>/dev/null || echo ""
+}
+
+# ── Helper: upload a photo of a named person (Wikipedia, picsum fallback) ────
+upload_person_photo() {
+  local name="$1" fallback_seed="$2"
+  info "  Fetching photo of '$name' from Wikipedia…"
+  local url; url=$(fetch_person_photo_url "$name")
+  if [[ -z "$url" ]]; then
+    warn "  No Wikipedia photo for '$name' – using picsum fallback."
+    url="https://picsum.photos/seed/${fallback_seed}/1200/800"
+  fi
+  upload_photo "$url"
+}
+
 # ── Optional reset ────────────────────────────────────────────────────────────
 if $RESET; then
   warn "⚠️  RESET MODE – deleting all existing documents and files…"
@@ -837,7 +861,7 @@ fi
 info "Uploading photo quote posts…"
 
 # alice – inspirational quote on a nature background
-QIMG1=$(upload_photo "https://picsum.photos/seed/octopus-q1/1200/800")
+QIMG1=$(upload_person_photo "J.R.R. Tolkien" "octopus-q1")
 if [[ -n "$QIMG1" ]]; then
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid "$U1" \
@@ -861,7 +885,7 @@ if [[ -n "$QIMG1" ]]; then
 fi
 
 # bob – programming quote on a dark code background
-QIMG2=$(upload_photo "https://picsum.photos/seed/octopus-q2/1200/800")
+QIMG2=$(upload_person_photo "Martin Fowler" "octopus-q2")
 if [[ -n "$QIMG2" ]]; then
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid "$U2" \
@@ -885,7 +909,7 @@ if [[ -n "$QIMG2" ]]; then
 fi
 
 # carol – design quote on a minimal background
-QIMG3=$(upload_photo "https://picsum.photos/seed/octopus-q3/1200/800")
+QIMG3=$(upload_person_photo "Steve Jobs" "octopus-q3")
 if [[ -n "$QIMG3" ]]; then
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid "$U3" \
@@ -909,7 +933,7 @@ if [[ -n "$QIMG3" ]]; then
 fi
 
 # alice – writing quote on a cosy reading background
-QIMG4=$(upload_photo "https://picsum.photos/seed/octopus-q4/1200/800")
+QIMG4=$(upload_person_photo "Ernest Hemingway" "octopus-q4")
 if [[ -n "$QIMG4" ]]; then
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid "$U1" \
@@ -933,7 +957,7 @@ if [[ -n "$QIMG4" ]]; then
 fi
 
 # bob – philosophy quote on a moody landscape
-QIMG5=$(upload_photo "https://picsum.photos/seed/octopus-q5/1200/800")
+QIMG5=$(upload_person_photo "Steve Jobs" "octopus-q5")
 if [[ -n "$QIMG5" ]]; then
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid "$U2" \
@@ -956,7 +980,7 @@ if [[ -n "$QIMG5" ]]; then
 fi
 
 # carol – architecture quote on an urban photo
-QIMG6=$(upload_photo "https://picsum.photos/seed/octopus-q6/1200/800")
+QIMG6=$(upload_person_photo "Le Corbusier" "octopus-q6")
 if [[ -n "$QIMG6" ]]; then
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid "$U3" \
@@ -980,7 +1004,7 @@ if [[ -n "$QIMG6" ]]; then
 fi
 
 # alice – nature-themed motivational quote
-QIMG7=$(upload_photo "https://picsum.photos/seed/octopus-q7/1200/800")
+QIMG7=$(upload_person_photo "Albert Einstein" "octopus-q7")
 if [[ -n "$QIMG7" ]]; then
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid "$U1" \
@@ -1003,7 +1027,7 @@ if [[ -n "$QIMG7" ]]; then
 fi
 
 # bob – tech / simplicity quote
-QIMG8=$(upload_photo "https://picsum.photos/seed/octopus-q8/1200/800")
+QIMG8=$(upload_person_photo "Antoine de Saint-Exupéry" "octopus-q8")
 if [[ -n "$QIMG8" ]]; then
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid "$U2" \
@@ -1026,7 +1050,7 @@ if [[ -n "$QIMG8" ]]; then
 fi
 
 # carol – art / creativity quote
-QIMG9=$(upload_photo "https://picsum.photos/seed/octopus-q9/1200/800")
+QIMG9=$(upload_person_photo "Albert Einstein" "octopus-q9")
 if [[ -n "$QIMG9" ]]; then
   aw POST "/databases/$DB_ID/collections/posts/documents" "$(jq -n \
     --arg uid "$U3" \

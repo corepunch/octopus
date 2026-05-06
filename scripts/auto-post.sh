@@ -331,6 +331,18 @@ random_picsum_seed() {
   echo "${interest}-${RANDOM}-${RANDOM}"
 }
 
+# ── Helper: fetch a photo URL for a named person from Wikipedia ──────────────
+# Returns the Wikipedia thumbnail URL for the person, or empty string on failure.
+fetch_person_photo_url() {
+  local name="$1"
+  local encoded; encoded=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$name" 2>/dev/null \
+    || echo "${name// /+}")
+  local raw; raw=$(curl -s --max-time 15 \
+    "https://en.wikipedia.org/w/api.php?action=query&titles=${encoded}&prop=pageimages&format=json&pithumbsize=1200" \
+    2>/dev/null || echo "")
+  jq -r '(.query.pages | to_entries[0].value.thumbnail.source) // ""' <<< "$raw" 2>/dev/null || echo ""
+}
+
 
 
 # Quote post: find an interesting post from Reddit and rephrase it with AI.
@@ -389,9 +401,20 @@ do_quote_post() {
 
   local first_interest; first_interest=$(echo "$interests" | awk '{print $1}')
 
-  # Background image: picsum with a random seed so each run produces a unique image
-  local rand_seed; rand_seed=$(random_picsum_seed "$first_interest")
-  local img_url="https://picsum.photos/seed/${rand_seed}/1200/800"
+  # Background image: use a photo of the quoted person when source is a real name;
+  # fall back to a random picsum image for AI-generated or Reddit-sourced quotes.
+  local img_url=""
+  if [[ -n "$quote_source" ]] \
+     && [[ "$quote_source" != "AI –"* ]] \
+     && [[ "$quote_source" != "r/"* ]]; then
+    info "  Fetching photo of '$quote_source' from Wikipedia…"
+    img_url=$(fetch_person_photo_url "$quote_source")
+    [[ -z "$img_url" ]] && warn "  No Wikipedia photo found for '$quote_source' – using picsum fallback."
+  fi
+  if [[ -z "$img_url" ]]; then
+    local rand_seed; rand_seed=$(random_picsum_seed "$first_interest")
+    img_url="https://picsum.photos/seed/${rand_seed}/1200/800"
+  fi
   info "  Uploading background photo…"
   local img_id; img_id=$(upload_photo "$img_url")
 
