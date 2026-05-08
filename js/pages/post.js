@@ -33,7 +33,13 @@ async function initPost() {
       linkUrl:     post.linkUrl || '',
       quoteSource: post.quoteSource || '',
       userText:    post.userText || '',
+      isOwner:     !!(currentUser && currentUser.$id === post.authorId),
     });
+
+    const deleteBtn = document.getElementById('post-delete-btn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', () => deletePost(post, deleteBtn));
+    }
 
     // Append the comments section below the post body
     const commentsEl = document.createElement('div');
@@ -446,6 +452,32 @@ async function toggleFollow(targetId, btn) {
 }
 
 document.addEventListener('DOMContentLoaded', initPost);
+
+async function deletePost(post, btn) {
+  if (!currentUser || currentUser.$id !== post.authorId) return;
+
+  const confirmed = window.confirm('Delete this post? This cannot be undone.');
+  if (!confirmed) return;
+
+  btn.disabled = true;
+  try {
+    await databases.deleteDocument(APPWRITE_DB_ID, COL_POSTS, post.$id);
+
+    if (post.imageId && typeof storage !== 'undefined') {
+      try {
+        await storage.deleteFile(APPWRITE_BUCKET_ID, post.imageId);
+      } catch (err) {
+        console.warn('Post deleted, but image cleanup failed.', err);
+      }
+    }
+
+    window.location.href = `profile.html?id=${encodeURIComponent(currentUser.$id)}`;
+  } catch (err) {
+    console.error(err);
+    window.alert('Could not delete post.');
+    btn.disabled = false;
+  }
+}
 
 /**
  * Compute a short display label for a post, used in "More from X" sidebar.
