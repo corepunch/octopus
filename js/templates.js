@@ -185,7 +185,7 @@
     <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
-    {{#if isOwner}}<button class="action-btn" id="post-delete-btn">{{icon "x"}} Delete</button>{{/if}}
+    {{#if isOwner}}<button class="action-btn" id="post-delete-btn">{{icon "trash-2"}} Delete</button>{{/if}}
   </div>
   {{#if content}}<div class="markdown-body">{{markdown content}}</div>{{/if}}
 {{else if (eq postType "quote")}}
@@ -201,7 +201,7 @@
     <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="{{excerpt content}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
-    {{#if isOwner}}<button class="action-btn" id="post-delete-btn">{{icon "x"}} Delete</button>{{/if}}
+    {{#if isOwner}}<button class="action-btn" id="post-delete-btn">{{icon "trash-2"}} Delete</button>{{/if}}
   </div>
   {{#if userText}}<div class="post-page-user-text markdown-body" style="margin-top:16px;">{{markdown userText}}</div>{{/if}}
 {{else if (eq postType "link")}}
@@ -226,7 +226,7 @@
     <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="{{linkUrl}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
-    {{#if isOwner}}<button class="action-btn" id="post-delete-btn">{{icon "x"}} Delete</button>{{/if}}
+    {{#if isOwner}}<button class="action-btn" id="post-delete-btn">{{icon "trash-2"}} Delete</button>{{/if}}
   </div>
   {{#if content}}<div class="markdown-body" style="margin-top:16px;">{{markdown content}}</div>{{/if}}
 {{else}}
@@ -240,7 +240,7 @@
     <button class="action-btn action-btn--like" id="post-like-btn" data-like-id="{{id}}" data-like-type="post">{{icon "heart"}} <span id="post-like-count">…</span></button>
     <button class="action-btn" data-share-id="{{id}}" data-share-title="{{title}}">{{icon "share-2"}} Share</button>
     <button class="action-btn" disabled title="Repost coming soon">{{icon "repeat-2"}} Repost</button>
-    {{#if isOwner}}<button class="action-btn" id="post-delete-btn">{{icon "x"}} Delete</button>{{/if}}
+    {{#if isOwner}}<button class="action-btn" id="post-delete-btn">{{icon "trash-2"}} Delete</button>{{/if}}
   </div>
   <div class="markdown-body">{{markdown content}}</div>
 {{/if}}`;

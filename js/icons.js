@@ -27,6 +27,7 @@
  * repeat-2       Repost
  * share-2        Share
  * x              Cancel / close
+ * trash-2        Delete
  * send           Publish / submit
  * file-text      Text post type
  * image          Photo post type
@@ -114,6 +115,13 @@ const ICONS = (function () {
     'x': svg(
       '<path d="M18 6 6 18"/>' +
       '<path d="m6 6 12 12"/>'
+    ),
+    'trash-2': svg(
+      '<path d="M3 6h18"/>' +
+      '<path d="M8 6V4h8v2"/>' +
+      '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>' +
+      '<path d="M10 11v6"/>' +
+      '<path d="M14 11v6"/>'
     ),
     'send': svg(
       '<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/>' +
