@@ -2,8 +2,8 @@ name: Auto Post (AI-Powered Content Discovery)
 
 on:
   # Run daily at 09:00 UTC (early morning Europe, late night US West Coast)
-  schedule:
-    - cron: '0 9 * * *'
+  # schedule:
+  #   - cron: '0 9 * * *'
   # Run manually from the Actions tab
   workflow_dispatch:
     inputs:
