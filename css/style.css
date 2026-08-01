@@ -353,7 +353,7 @@ a:hover { text-decoration: underline; }
   padding: 0 20px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--color-nav-text-muted);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: color 0.15s;
@@ -361,8 +361,11 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
 }
-.feed-tab:hover { color: var(--color-accent); }
-.feed-tab.active { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+.feed-tab:hover { color: var(--color-nav-text); }
+.feed-tab.active {
+  color: var(--color-nav-text);
+  border-bottom-color: var(--color-nav-text);
+}
 
 /* ── Sidebar widgets (in right column) ───────────────────── */
 .widget {
