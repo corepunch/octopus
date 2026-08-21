@@ -718,7 +718,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 @media (max-width: 720px) {
   .page-wrap { grid-template-columns: 1fr; }
   .left-nav { display: none; }
-  .nav-1 { width: auto; flex: 1; }
+  .nav-1 { width: auto; flex: 1; justify-content: flex-start; }
   .nav-2 { display: none; }
   .nav-3 { width: auto; }
   .main-col { border-left: none; border-right: none; padding-left: 0; padding-right: 0; }
