@@ -158,11 +158,9 @@ a:hover { text-decoration: underline; }
 }
 .nav-logo:hover { text-decoration: none; color: var(--color-nav-text); opacity: 0.85; }
 
-.nav-logo-image {
-  display: block;
-  height: 42px;
-  width: auto;
-}
+.nav-logo { gap: 8px; }
+.nav-logo-mark { display: block; width: 32px; height: 32px; flex-shrink: 0; }
+.nav-logo-word { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
 
 .nav-links { display: flex; align-items: center; gap: 4px; }
 .nav-links a {

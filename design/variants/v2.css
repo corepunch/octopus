@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── Theme: Abyss — dark-first deep-sea UI with bioluminescent cyan accent ── */
+:root {
+  color-scheme: dark;
+  --font-sans: "Manrope", "Inter", system-ui, sans-serif;
+  --font-display: "Sora", "Manrope", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --display-weight: 600;
+  --display-tracking: -0.025em;
+
+  --color-bg: #05080f;
+  --color-surface: #0b111d;
+  --color-surface-soft: #0e1524;
+  --color-surface-muted: #131c2e;
+  --color-text: #b9c3d6;
+  --color-text-strong: #eef3fb;
+  --color-text-soft: #a3aec4;
+  --color-text-muted: #7a879f;
+  --color-text-subtle: #56627a;
+  --color-border: rgba(148,178,255,.09);
+  --color-border-strong: rgba(148,178,255,.16);
+  --color-border-hover: rgba(148,178,255,.28);
+
+  --color-accent: #3de0d0;
+  --color-accent-soft: rgba(61,224,208,.12);
+  --color-on-accent: #031614;
+  --accent-fill: linear-gradient(135deg, #3de0d0 0%, #38bdf8 100%);
+  --accent-fill-hover: linear-gradient(135deg, #5ff0e1 0%, #5ccbff 100%);
+  --btn-primary-shadow: 0 0 0 1px rgba(61,224,208,.35), 0 6px 22px -6px rgba(61,224,208,.55);
+  --btn-primary-shadow-hover: 0 0 0 1px rgba(61,224,208,.5), 0 8px 28px -6px rgba(61,224,208,.75);
+  --btn-secondary-bg: transparent;
+
+  --hover-bg: rgba(148,178,255,.06);
+  --hover-accent-bg: rgba(61,224,208,.08);
+  --active-accent-bg: rgba(61,224,208,.10);
+
+  --nav-bg: rgba(5,8,15,.72);
+  --nav-blur: saturate(160%) blur(18px);
+  --nav-border: 1px solid rgba(148,178,255,.08);
+  --color-nav-text: #eef3fb;
+  --color-nav-text-muted: #7a879f;
+  --nav-link-hover-bg: rgba(148,178,255,.08);
+  --logo-color: #3de0d0;
+  --logo-word-color: #eef3fb;
+
+  --tabs-bg: rgba(148,178,255,.06);
+  --tabs-border: 1px solid rgba(148,178,255,.08);
+  --tab-active-bg: rgba(61,224,208,.14);
+  --tab-active-text: #3de0d0;
+  --tab-active-shadow: inset 0 0 0 1px rgba(61,224,208,.35);
+
+  --card-bg: linear-gradient(180deg, rgba(20,30,50,.55), rgba(11,17,29,.55));
+  --card-border: rgba(148,178,255,.09);
+  --card-border-hover: rgba(61,224,208,.35);
+  --card-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+  --card-shadow-hover: inset 0 1px 0 rgba(255,255,255,.04), 0 0 0 1px rgba(61,224,208,.12), 0 18px 40px -18px rgba(61,224,208,.35);
+  --left-nav-active-border: rgba(61,224,208,.25);
+
+  --tag-bg: transparent;
+  --tag-text: #8fe9df;
+  --tag-border: 1px solid rgba(61,224,208,.28);
+
+  --input-bg: rgba(5,8,15,.6);
+  --avatar-bg: radial-gradient(circle at 30% 30%, #5ff0e1, #0e7490);
+  --avatar-text: #031614;
+
+  --color-danger: #ff6b81;
+  --color-danger-bg: rgba(255,107,129,.08);
+  --color-danger-border: rgba(255,107,129,.3);
+  --color-success: #4ade9b;
+  --color-success-bg: rgba(74,222,155,.08);
+  --color-success-border: rgba(74,222,155,.3);
+  --color-like: #ff6b81;
+  --color-code-bg: #03060c;
+  --color-code-text: #cfe3ff;
+  --focus-ring: rgba(61,224,208,.2);
+}
+
+/* Deep-water gradient + faint light rays from the surface */
+body {
+  background:
+    radial-gradient(1200px 500px at 50% -15%, rgba(56,189,248,.14), transparent 65%),
+    radial-gradient(700px 400px at 100% 30%, rgba(61,224,208,.06), transparent 60%),
+    linear-gradient(180deg, #071021 0%, #05080f 55%);
+  background-attachment: fixed;
+}
+
+/* Bioluminescent octopus */
+.nav-logo-mark { filter: drop-shadow(0 0 10px rgba(61,224,208,.55)); }
+
+.post-card, .widget, .card, .profile-header {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.card { background: var(--color-surface); }
+
+.post-card-title:hover { color: var(--color-accent); }
+.post-meta .author-link { color: #dfe8f7; }
+.tag:hover { border-color: transparent; }
+.markdown-body pre { border: 1px solid var(--color-border); }
