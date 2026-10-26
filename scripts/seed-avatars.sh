@@ -61,7 +61,10 @@ info "Uploading seed profile photos…"
 for name in alice bob carol dave eve; do
   uid="${USERS[$name]}"
   photo="$AVATAR_DIR/$name.jpg"
-  [[ -f "$photo" ]] || err_exit "Missing $photo"
+  if [[ ! -f "$photo" ]]; then
+    warn "  $name has no portrait at $photo – skipping."
+    continue
+  fi
 
   if ! profile=$(aw "$ENDPOINT/databases/$DB_ID/collections/profiles/documents/$uid" 2>/dev/null); then
     warn "  $name has no profile yet – skipping."
