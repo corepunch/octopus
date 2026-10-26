@@ -377,11 +377,15 @@ async function renderPostSidebar(post) {
   if (!sidebar) return;
 
   const showFollow = !!(currentUser && currentUser.$id !== post.authorId);
-  const following  = showFollow ? await isFollowing(post.authorId) : false;
+  const [following, author] = await Promise.all([
+    showFollow ? isFollowing(post.authorId) : false,
+    databases.getDocument(APPWRITE_DB_ID, COL_USERS, post.authorId).catch(() => null),
+  ]);
 
   sidebar.innerHTML = renderTemplate('post-author', {
     authorId:   post.authorId,
     authorName: post.authorName,
+    avatarId:   author?.avatarId || '',
     showFollow,
     following,
   });

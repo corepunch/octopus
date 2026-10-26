@@ -67,6 +67,7 @@ async function doSearch() {
         .map(u => renderTemplate('user-result', {
           id:       u.userId,
           username: u.username,
+          avatarId: u.avatarId || '',
           bio:      u.bio || '',
         }))
         .join('');

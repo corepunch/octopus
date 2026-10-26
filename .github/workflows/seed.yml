@@ -38,3 +38,10 @@ jobs:
           else
             bash scripts/seed-appwrite.sh
           fi
+
+      - name: Seed profile photos
+        env:
+          APPWRITE_API_KEY:    ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_ENDPOINT:   "https://fra.cloud.appwrite.io/v1"
+          APPWRITE_PROJECT_ID: "69f1c06800389dc6a1a0"
+        run: bash scripts/seed-avatars.sh

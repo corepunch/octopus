@@ -708,6 +708,10 @@ textarea.form-control { resize: vertical; min-height: 96px; line-height: 1.55; }
   color: var(--avatar-text);
   flex-shrink: 0;
 }
+.avatar--photo { display: block; object-fit: cover; }
+.widget-author { display: flex; align-items: center; gap: 10px; }
+#avatar-btn { margin-left: 6px; cursor: pointer; }
+#avatar-btn.is-busy { opacity: 0.6; pointer-events: none; }
 .profile-info h2 {
   font-family: var(--font-display);
   font-size: 24px;

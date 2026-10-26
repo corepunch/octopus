@@ -41,6 +41,7 @@ async function initProfile() {
     container.innerHTML = renderTemplate('profile-header', {
       profileId,
       username:    profile.username,
+      avatarId:    profile.avatarId || '',
       bio:         profile.bio || '',
       followers:   followersRes.total,
       following:   followingRes.total,
@@ -53,6 +54,10 @@ async function initProfile() {
     const btn = document.getElementById('follow-btn');
     if (btn) {
       btn.addEventListener('click', () => toggleFollow(profileId, btn));
+    }
+    const avatarInput = document.getElementById('avatar-input');
+    if (avatarInput) {
+      avatarInput.addEventListener('change', () => changeAvatar(profile.username, avatarInput));
     }
 
     loadUserPosts(profileId);
@@ -96,6 +101,28 @@ async function loadUserPosts(profileId) {
   } catch (err) {
     el.innerHTML = '<div class="empty-state"><p>Could not load posts.</p></div>';
     console.error(err);
+  }
+}
+
+// Upload a square crop of the chosen photo and point the profile at it. The
+// apps read the same profiles.avatarId, so the photo shows up everywhere.
+async function changeAvatar(username, input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file || !currentUser) return;
+  const label = document.getElementById('avatar-btn');
+  label.classList.add('is-busy');
+  try {
+    await ensureProfile(currentUser);
+    const photo    = await cropAvatar(file);
+    const uploaded = await storage.createFile(APPWRITE_BUCKET_ID, ID.unique(), photo);
+    await databases.updateDocument(APPWRITE_DB_ID, COL_USERS, currentUser.$id, { avatarId: uploaded.$id });
+    document.querySelector('.profile-header .avatar').outerHTML = avatarHtml(username, uploaded.$id);
+  } catch (err) {
+    console.error(err);
+    alert('Could not update your photo. Please try again.');
+  } finally {
+    label.classList.remove('is-busy');
   }
 }
 

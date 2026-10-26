@@ -76,7 +76,7 @@ The workflow creates:
 |---|---|---|
 | `posts` | `title` (text posts only), `content`, `authorId`, `authorName`, `tags[]`, `published`, `postType`, `imageId`, `linkUrl`, `quoteSource`, `userText` (quote posts) | full-text on `title`, key on `authorId` |
 | `follows` | `followerId`, `followingId` | key on each, unique pair |
-| `profiles` | `userId`, `username`, `bio` | unique `userId`, full-text `username` |
+| `profiles` | `userId`, `username`, `bio`, `avatarId` | unique `userId`, full-text `username` |
 
 **Option B – locally**
 
@@ -86,6 +86,20 @@ bash scripts/provision-appwrite.sh
 ```
 
 Requires: `curl`, `jq`.
+
+### Profile photos
+
+`profiles.avatarId` holds the $id of a square JPEG in the `post-images`
+bucket. Signed-in writers set it with **Change Photo** on their own profile;
+the site shows it on profiles, search results and the post author widget,
+with the name's initial as the fallback. The ORCA Octopus app and Chat read
+the same attribute for the same Appwrite user, so one photo shows up in all
+three. Profile documents are created with the user's ID, so a photo can be
+looked up from any `authorId` or Chat member ID.
+
+**Actions → Seed Appwrite Sample Data** also runs `scripts/seed-avatars.sh`,
+which uploads `scripts/avatars/<username>.jpg` for the seed users; run the
+provision workflow first so `avatarId` exists.
 
 ### 4 — Done
 
