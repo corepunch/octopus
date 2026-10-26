@@ -157,6 +157,12 @@ collections:
         size: 1024
         required: false
         default: ""
+      # avatarId: profile photo, a post-images file $id. The website, the
+      # Octopus app and Chat all read it, keyed by the shared Appwrite user.
+      - key: "avatarId"
+        type: "string"
+        size: 36
+        required: false
       # interests: up to 20 topics (e.g. "technology", "design")
       - key: "interests"
         type: "string"

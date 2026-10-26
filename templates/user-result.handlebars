@@ -1,5 +1,5 @@
 <div class="post-card" style="display:flex;align-items:center;gap:12px;">
-  <div class="avatar" style="width:40px;height:40px;font-size:18px;">{{initial username}}</div>
+  {{avatar username avatarId 40}}
   <div>
     <a href="profile.html?id={{urlEncode id}}" class="user-result-link">{{username}}</a>
     {{#if bio}}<div class="post-excerpt" style="margin-top:3px;">{{bio}}</div>{{/if}}

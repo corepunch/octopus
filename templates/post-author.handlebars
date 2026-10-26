@@ -1,6 +1,6 @@
 <div class="widget">
   <h3>Author</h3>
-  <a href="profile.html?id={{urlEncode authorId}}" style="font-weight:bold;">{{authorName}}</a>
+  <a href="profile.html?id={{urlEncode authorId}}" class="widget-author">{{avatar authorName avatarId 40}}<strong>{{authorName}}</strong></a>
   {{#if showFollow}}
   <div style="margin-top:10px;">
     <button id="follow-btn"

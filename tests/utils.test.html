@@ -47,6 +47,15 @@ assert('escapeHtml – quotes', escapeHtml('"hi"'), '&quot;hi&quot;');
 assert('parseTags – basic', parseTags('js, Go, Web Dev'), ['js', 'go', 'web-dev']);
 assert('parseTags – empty string', parseTags(''), []);
 assert('parseTags – max 10 tags', parseTags(Array(15).fill('x').join(',')).length, 10);
+
+// ── avatarHtml ────────────────────────────────────────────────────────────────
+assert('avatarHtml – initial without a photo', avatarHtml('maya', ''), '<div class="avatar">M</div>');
+assert('avatarHtml – escapes the initial', avatarHtml('<b>', ''), '<div class="avatar">&lt;</div>');
+assert('avatarHtml – photo from post-images',
+  avatarHtml('maya', 'f1', 40),
+  `<img class="avatar avatar--photo" src="${APPWRITE_ENDPOINT}/storage/buckets/post-images/files/f1/view?project=${APPWRITE_PROJECT_ID}" alt="" style="width:40px;height:40px;font-size:18px;"/>`);
+assert('avatar helper – template fallback',
+  Handlebars.compile('{{avatar name avatarId}}')({ name: 'bob' }), '<div class="avatar">B</div>');
 </script>
 </body>
 </html>

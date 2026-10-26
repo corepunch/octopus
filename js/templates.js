@@ -249,7 +249,7 @@
   const postAuthor = `
 <div class="widget">
   <h3>Author</h3>
-  <a href="profile.html?id={{urlEncode authorId}}" style="font-weight:bold;">{{authorName}}</a>
+  <a href="profile.html?id={{urlEncode authorId}}" class="widget-author">{{avatar authorName avatarId 40}}<strong>{{authorName}}</strong></a>
   {{#if showFollow}}
   <div style="margin-top:10px;">
     <button id="follow-btn"
@@ -277,7 +277,7 @@
   /** Profile header: avatar, stats, follow/edit button and posts container. */
   const profileHeader = `
 <div class="profile-header">
-  <div class="avatar">{{initial username}}</div>
+  {{avatar username avatarId}}
   <div class="profile-info">
     <h2>{{username}}</h2>
     {{#if bio}}<p class="bio">{{bio}}</p>{{/if}}
@@ -289,6 +289,7 @@
     <div style="margin-top:10px;">
       {{#if isOwn}}
         <a href="settings.html" class="btn btn-secondary btn-sm">{{icon "settings"}} Edit Profile</a>
+        <label class="btn btn-secondary btn-sm" id="avatar-btn">{{icon "image"}} Change Photo<input type="file" id="avatar-input" accept="image/*" hidden/></label>
       {{else if showFollow}}
         <button id="follow-btn"
           class="btn {{#if isFollowing}}btn-secondary{{else}}btn-primary{{/if}} btn-sm"
@@ -307,7 +308,7 @@
   /** User result card. */
   const userResult = `
 <div class="post-card" style="display:flex;align-items:center;gap:12px;">
-  <div class="avatar" style="width:40px;height:40px;font-size:18px;">{{initial username}}</div>
+  {{avatar username avatarId 40}}
   <div>
     <a href="profile.html?id={{urlEncode id}}" class="user-result-link">{{username}}</a>
     {{#if bio}}<div class="post-excerpt" style="margin-top:3px;">{{bio}}</div>{{/if}}

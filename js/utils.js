@@ -118,6 +118,11 @@ Handlebars.registerHelper('excerpt', (text) => excerpt(text));
 /** {{initial name}} → first character, uppercased */
 Handlebars.registerHelper('initial', (name) => (name?.[0] || '?').toUpperCase());
 
+/** {{avatar name avatarId size}} → profile photo, or the name's initial */
+Handlebars.registerHelper('avatar', (name, avatarId, size) =>
+  new Handlebars.SafeString(avatarHtml(name, avatarId, typeof size === 'number' ? size : 0))
+);
+
 /** {{urlEncode str}} → URI-encoded value safe for query strings */
 Handlebars.registerHelper('urlEncode', (str) => encodeURIComponent(str));
 
@@ -192,6 +197,49 @@ Handlebars.registerHelper('displayUrl', (url) =>
 function getImageUrl(fileId) {
   if (!fileId) return '';
   return `${APPWRITE_ENDPOINT}/storage/buckets/${APPWRITE_BUCKET_ID}/files/${fileId}/view?project=${APPWRITE_PROJECT_ID}`;
+}
+
+/**
+ * Markup for a profile avatar: the photo when the profile has one, otherwise
+ * the first letter of the name. `size` (px) overrides the 72 px default.
+ * @param {string} name
+ * @param {string} [avatarId] – Appwrite Storage file $id from profiles.avatarId
+ * @param {number} [size]
+ * @returns {string} HTML
+ */
+function avatarHtml(name, avatarId, size) {
+  const style = size ? ` style="width:${size}px;height:${size}px;font-size:${Math.round(size * 0.45)}px;"` : '';
+  if (avatarId) {
+    return `<img class="avatar avatar--photo" src="${escapeHtml(getImageUrl(avatarId))}" alt=""${style}/>`;
+  }
+  return `<div class="avatar"${style}>${escapeHtml((name?.[0] || '?').toUpperCase())}</div>`;
+}
+
+/**
+ * Crop an image File to a centred square JPEG for use as a profile photo.
+ * @param {File} file
+ * @param {number} [size=400] – output width and height in px
+ * @returns {Promise<File>} square JPEG File
+ */
+function cropAvatar(file, size = 400) {
+  return new Promise(function (resolve, reject) {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('Could not read the photo')); };
+    img.onload = function () {
+      URL.revokeObjectURL(url);
+      const side = Math.min(img.width, img.height);
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = Math.min(size, side);
+      canvas.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side,
+        0, 0, canvas.width, canvas.height);
+      canvas.toBlob(function (blob) {
+        if (blob) resolve(new File([blob], 'avatar.jpg', { type: 'image/jpeg' }));
+        else      reject(new Error('Photo conversion failed'));
+      }, 'image/jpeg', 0.85);
+    };
+    img.src = url;
+  });
 }
 
 /**
