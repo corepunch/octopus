@@ -1,0 +1,86 @@
+[
+  {
+    "title": "Sagan on extraordinary claims",
+    "content": "Extraordinary claims require extraordinary evidence.",
+    "authorId": "seed-user-dave-004",
+    "authorName": "dave",
+    "tags": [
+      "science",
+      "skepticism",
+      "quotes"
+    ],
+    "published": true,
+    "postType": "quote",
+    "imageId": null,
+    "linkUrl": null,
+    "quoteSource": "Carl Sagan",
+    "userText": null,
+    "imageWidth": null,
+    "imageHeight": null,
+    "$id": "69f3054e1fced606b8af",
+    "$sequence": "132",
+    "$createdAt": "2026-04-30T07:31:26.131+00:00",
+    "$updatedAt": "2026-04-30T07:31:26.131+00:00",
+    "$permissions": [
+      "read(\"any\")"
+    ],
+    "$databaseId": "octopus-db",
+    "$collectionId": "posts"
+  },
+  {
+    "title": "The cosmos, approximated",
+    "content": "Every time I look at a long-exposure photograph of the night sky I have to remind myself that the light in each of those points is thousands of years old.",
+    "authorId": "seed-user-dave-004",
+    "authorName": "dave",
+    "tags": [
+      "photography",
+      "science",
+      "cosmos"
+    ],
+    "published": true,
+    "postType": "photo",
+    "imageId": "69f3053770daaec37869",
+    "linkUrl": null,
+    "quoteSource": null,
+    "userText": null,
+    "imageWidth": 1200,
+    "imageHeight": 800,
+    "$id": "69f3054f326177d42ec3",
+    "$sequence": "136",
+    "$createdAt": "2026-04-30T07:31:27.207+00:00",
+    "$updatedAt": "2026-10-28T14:19:16.492+00:00",
+    "$permissions": [
+      "read(\"any\")"
+    ],
+    "$databaseId": "octopus-db",
+    "$collectionId": "posts"
+  },
+  {
+    "title": "Complexity Explorables",
+    "content": "Interactive simulations of complex systems: emergence, phase transitions, flocking, epidemics. The best way to build intuition for non-linear dynamics.",
+    "authorId": "seed-user-dave-004",
+    "authorName": "dave",
+    "tags": [
+      "science",
+      "complexity",
+      "interactive"
+    ],
+    "published": true,
+    "postType": "link",
+    "imageId": null,
+    "linkUrl": "https://www.complexity-explorables.org",
+    "quoteSource": null,
+    "userText": null,
+    "imageWidth": null,
+    "imageHeight": null,
+    "$id": "69f3054e5206f68f87ae",
+    "$sequence": "133",
+    "$createdAt": "2026-04-30T07:31:26.336+00:00",
+    "$updatedAt": "2026-04-30T07:31:26.336+00:00",
+    "$permissions": [
+      "read(\"any\")"
+    ],
+    "$databaseId": "octopus-db",
+    "$collectionId": "posts"
+  }
+]
