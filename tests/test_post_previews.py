@@ -57,6 +57,17 @@ class Previews(unittest.TestCase):
         self.assertNotIn('<script>alert', source)
         self.assertEqual(Head(source).meta['og:url'], 'https://example.org/p/test.html')
 
+    def test_parallel_output_matches_serial(self):
+        items = [self.post(kind, **{'$id': str(i)})
+                 for i, kind in enumerate(['quote', 'photo', 'link', 'text'])]
+        with tempfile.TemporaryDirectory() as tmp:
+            serial, parallel = Path(tmp) / 'serial', Path(tmp) / 'parallel'
+            m.generate(items, serial, 'https://example.org/', False, workers=1)
+            m.generate(items, parallel, 'https://example.org/', False, workers=4)
+            first = {p.relative_to(serial): p.read_bytes() for p in serial.rglob('*') if p.is_file()}
+            second = {p.relative_to(parallel): p.read_bytes() for p in parallel.rglob('*') if p.is_file()}
+            self.assertEqual(first, second)
+
     def test_reject_path_traversal(self):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ValueError):
