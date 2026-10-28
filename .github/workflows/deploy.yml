@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '7,22,37,52 * * * *'
   # Allow running manually from the Actions tab
   workflow_dispatch:
 
@@ -35,11 +37,31 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends xsltproc
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install preview dependencies
+        run: |
+          sudo apt-get install -y fonts-dejavu-core
+          pip install -r scripts/preview-requirements.txt
+
+      - name: Test previews
+        run: python -m unittest discover -s tests -p 'test_*.py'
+
       - name: Build site into dist/
         run: bash scripts/build.sh
 
       - name: Configure GitHub Pages
+        id: pages
         uses: actions/configure-pages@v5
+
+      - name: Generate public post previews
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+        run: python scripts/post_previews.py --site-url "$SITE_URL"
+
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3

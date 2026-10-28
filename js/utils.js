@@ -284,8 +284,18 @@ function compressImage(file) {
  * @param {string} id    – post document $id
  * @param {string} title – post title (used as share title)
  */
+// Load readiness ahead of the click, preserving Web Share's user activation.
+const shareReadyPosts = new Set();
+fetch(new URL('share-posts.json', window.location.href), { cache: 'no-cache' })
+  .then(response => response.ok ? response.json() : [])
+  .then(ids => { if (Array.isArray(ids)) ids.forEach(id => shareReadyPosts.add(id)); })
+  .catch(() => {});
+
 function sharePost(id, title) {
-  const url = new URL('post.html?id=' + encodeURIComponent(id), window.location.href).href;
+  const path = shareReadyPosts.has(id)
+    ? 'p/' + encodeURIComponent(id) + '.html'
+    : 'post.html?id=' + encodeURIComponent(id);
+  const url = new URL(path, window.location.href).href;
   if (navigator.share) {
     navigator.share({ title: title || 'Octopus post', url }).catch(() => {});
   } else if (navigator.clipboard) {
