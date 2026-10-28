@@ -8,6 +8,7 @@ import json
 import re
 import shutil
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import urlencode, quote, urlsplit
 from urllib.request import Request, urlopen
@@ -135,19 +136,19 @@ def page(p, base, image):
 <style>body{{font:20px/1.6 system-ui;max-width:850px;margin:40px auto;padding:20px;color:#173c3b;background:#f5f2e9}}img{{width:100%;border-radius:16px}}a{{color:#0e8f86}}p{{white-space:pre-wrap}}</style></head><body><a href="{e(base, quote=True)}">Octopus</a><article><h1>{e(title)}</h1><img src="{e(image, quote=True)}" alt="{e(title, quote=True)}"><p>{e(description)}</p><a href="{e(target, quote=True)}">Read full post and comments →</a></article>
 <script>location.replace({json.dumps(target).replace('<', r'\u003c')});</script></body></html>'''
 
-def generate(items, output, base, fetch_images=True):
+def generate(items, output, base, fetch_images=True, workers=4):
     if not base.startswith('https://') or urlsplit(base).query or urlsplit(base).fragment:
         raise ValueError('SITE_URL must be an absolute HTTPS directory URL')
     base = base.rstrip('/') + '/'
     destination = output / 'p'
     shutil.rmtree(destination, ignore_errors=True)  # Deleted/unpublished posts disappear on every successful deploy.
     destination.mkdir(parents=True)
-    ready = []
+    items = [p for p in items if p.get('published') is True]
     for p in items:
-        if p.get('published') is not True:
-            continue
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,35}', p['$id']):
             raise ValueError('Invalid post ID')
+
+    def render(p):
         photo = None
         if fetch_images and p.get('imageId'):
             try:
@@ -162,7 +163,11 @@ def generate(items, output, base, fetch_images=True):
         image = p['$id'] + '-' + hashlib.sha256(data).hexdigest()[:12] + '.jpg'
         (destination / image).write_bytes(data)
         (destination / (p['$id'] + '.html')).write_text(page(p, base, image), encoding='utf-8')
-        ready.append(p['$id'])
+        return p['$id']
+
+    # Overlap storage requests, but cap backend load and decoded image memory.
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        ready = list(pool.map(render, items))
     (output / 'share-posts.json').write_text(json.dumps(ready))
     print(f'Generated {len(ready)} public previews')
 
